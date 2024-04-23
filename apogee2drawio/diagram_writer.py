@@ -17,9 +17,13 @@ STYLE_LINK="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=
     endSize=8;startSize=8;"
 STYLE_LABEL="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;"
 
-
+# These codes are taken from Apogée's "référenciel", and shortened to three symbols 
 CODE_ELP={'Semestre':'SEM', 'U.E.':'UE', 'U.F.':'UF', 'Rés. étape':'RET', 'Stage':'STG', 
-          'Parcours':'PAR', 'Elt à choi':'ELC', 'BCC':'BCC'}
+          'Parcours':'PAR', 'Elt à choi':'ELC', 'BCC':'BCC', 'Année':'AN', 'Bloc':'BLC',
+          'Certificat':'CRT', 'C.M.':'CM', 'Compétence':'CMP', 'Cursus':'CUR', 'ECUE':'ECU',
+          'Examen':'EXA', 'Filière':'FIL', 'Matière':'MAT', 'Mémoire':'MEM', 'Module':'MOD',
+          'Niveau':'NIV', 'option':'OPT', 'Période':'PER', 'Projet':'PRJ', 'Section':'SEC',
+          'T.D.':'TD', 'T.P.':'TP', 'UE  nonADD':'UEF', 'UE sansnot':'USN', 'U.V.':'UV'}
 CODE_LIST={'Obligatoire':'LO', 'Obligatoire à choix':'LOX', 'Facultative':'LF'}
 
 def make_header(dl):

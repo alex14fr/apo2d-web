@@ -12,6 +12,7 @@ def make_diagram(infile, outfile):
     data=parse_doc(infile)
     graph=prepare_graph(data)
     y=TOP_POS
+    linkshift=LEFT_POS
     for i in range(len(graph)):
         level=graph[i]
         # Draw blocks:
@@ -20,12 +21,14 @@ def make_diagram(infile, outfile):
         h=0
         for k in blocks:
             block=blocks[k]
-            drawblock(root, blocks[k], (x, y))
-            x+=(WIDTH_ITEM+HORIZONTAL_SPACING)
+            (x,y)=drawblock(root, blocks[k], (x, y))
+            x+=HORIZONTAL_SPACING
             h=max(h, height_block(block))
         y+=(h+LAYER_SPACING)
         # Draw links:
         uplinks=level['uplinks']
+        leftmost=True
+        linkshift-=10
         for u in uplinks:
             if i==0:
                 raise ValueError(f'Uplink found on the top level')
@@ -40,5 +43,7 @@ def make_diagram(infile, outfile):
                 if 'min' in u and 'max' in u:
                     if u['min']!=None and u['max']!=None:
                         label=f"{u['min']}-{u['max']}"
-                drawlink(root, src=src, dst=dst, label=label)
+                drawlink(root, src=src, dst=dst, label=label, linkshift=(linkshift if leftmost else False), y=y-(h+LAYER_SPACING))
+                if leftmost:
+                    leftmost=False
     write_mxfile(mxfile, outfile)

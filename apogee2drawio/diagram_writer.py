@@ -58,7 +58,15 @@ def drawblock(root, block, pos):
     header=make_header(dl)
     container=etree.Element('mxCell', id=header, value=header, style=STYLE_HEADER, parent="1", vertex="1")
     h=height_block(block)
-    g=etree.Element('mxGeometry', x=str(x), y=str(y), width=str(WIDTH_ITEM), height=str(h))
+    maxwidth=WIDTH_ITEM
+    for item in block['items']:
+        label=make_label(item)
+        tip=item['name']
+        if tip!="":
+            itemwidth=(len(tip)+len(label)+3)*100/14
+            if itemwidth>maxwidth:
+                maxwidth=itemwidth
+    g=etree.Element('mxGeometry', x=str(x), y=str(y), width=str(maxwidth), height=str(h))
     g.set('as','geometry')
     container.append(g)
     root.append(container)
@@ -68,16 +76,19 @@ def drawblock(root, block, pos):
         label=make_label(item)
         id_item=make_id(block, item)
         tip=item['name']
-        uo=etree.Element('UserObject', label=label, tooltip=tip, id=id_item)
+        if tip!="":
+            label=f"{label} - {tip}"
+        uo=etree.Element('UserObject', label=label, id=id_item)
         cellstyle=STYLE_SUSPENDED_ITEM if 'suspended' in item else STYLE_ITEM
         cell=etree.Element('mxCell', style=cellstyle, parent=header, vertex="1")
         uo.append(cell)
-        g=etree.Element('mxGeometry', y=str(HIGHT_ITEM*count), width=str(WIDTH_ITEM), height=str(HIGHT_ITEM))
+        g=etree.Element('mxGeometry', y=str(HIGHT_ITEM*count), width=str(maxwidth), height=str(HIGHT_ITEM))
         g.set('as','geometry')
         cell.append(g)
         root.append(uo)
+    return (x+maxwidth, y)
 
-def drawlink(root, src, dst, label=None):
+def drawlink(root, src, dst, label=None, linkshift=False, y=None):
     block, n=src
     source=make_label(block['items'][n])
     id_source=make_id(block, block['items'][n])
@@ -87,6 +98,11 @@ def drawlink(root, src, dst, label=None):
                             source=id_source, target=target, edge="1")
     g=etree.Element('mxGeometry', width="50", height="50", relative="1")
     g.set('as','geometry')
+    if linkshift or (type(linkshift)==type(0) and linkshift==0):
+        ga=etree.Element('Array', {"as": "points"})
+        gap=etree.Element('mxPoint', {"x": str(linkshift), "y": str(y)})
+        ga.append(gap)
+        g.append(ga)
     container.append(g)
     root.append(container)
     if label==None:

@@ -1,0 +1,6 @@
+#!/bin/sh
+set -x
+o=$(pwd)
+cd ..
+php web/mktar.php |gzip -c > web/pkg.tgz
+

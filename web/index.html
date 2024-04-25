@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Conversion APOGEE &rarr; DrawIO</title>
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+<script defer src="script.js"></script>
+<style>
+* { margin: 0; padding: 0; border: 0; }
+#chargement { margin-top: 1em; text-align: center; width: 100%; }
+form { display: none; padding: .6em; border-bottom: 1px solid slategray; }
+iframe, input[type=file] { display: none; }
+#ouvrir { cursor: pointer; padding: 4px 10px; border-radius: 3px; border: none; color: white; background-color: #d92680; }
+</style>
+</head>
+<body>
+<div id="chargement">
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"><animateTransform attributeName="transform" type="rotate" dur="0.6s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>
+<p>
+Chargement en cours, veuillez patienter. 
+</div>
+<form>
+<input type="file">
+<button type=button id=ouvrir>Ouvrir un fichier XML Apogée</button>
+</form>
+<iframe src="https://embed.diagrams.net/?embed=1&proto=json&spin=0&saveAndExit=0&noSaveBtn=0&noExitBtn=1">
+</body>
+</html>

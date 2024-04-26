@@ -42,7 +42,7 @@ def makemxfile():
     mxfile = etree.Element('mxfile', host='apogee2drawio')
     diagram = etree.Element('diagram', name='Page 1')
     mxfile.append(diagram)
-    model = etree.Element('mxGraphModel', dx="1358", dy="688", grid="1", gridSize="10", guides="1", tooltips="1", connect="1", arrows="1", fold="1", page="1", pageScale="1", pageWidth="827", pageHeight="1169", math="0", shadow="0")
+    model = etree.Element('mxGraphModel', dx="1358", dy="688", grid="1", gridSize="10", guides="1", tooltips="1", connect="0", arrows="0", fold="1", page="1", pageScale="1", pageWidth="827", pageHeight="1169", math="0", shadow="0")
     diagram.append(model)
     root = etree.Element('root')
     model.append(root)

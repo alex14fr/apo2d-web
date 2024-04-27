@@ -1,5 +1,10 @@
 import xml.etree.ElementTree as etree
 
+from enum import Enum
+class ShowOption(Enum):
+    CODE_APOGEE = 1
+    DESCRIPTION = 2
+    CODE_AND_DESCRIPTION = 3
 
 WIDTH_ITEM=100
 HIGHT_ITEM=26
@@ -33,19 +38,19 @@ def make_header(dl):
     return f"{dl['code']} {CODE_LIST[dl['type']]}"
 
 def make_label(item, to_show):
-    if to_show=="code_apogee":
+    if to_show==ShowOption.CODE_APOGEE:
         return f"{item['code']} {CODE_ELP[item['type']]}"
-    elif to_show=="description":
+    elif to_show==ShowOption.DESCRIPTION:
         return item['name']
-    elif to_show=="both":
+    elif to_show==ShowOption.CODE_AND_DESCRIPTION:
         return f"{item['code']} {CODE_ELP[item['type']]} - {item['name']}"
     
 def make_tip(item, to_show):
-    if to_show=="code_apogee":
+    if to_show==ShowOption.CODE_APOGEE:
         return item['name']   
-    elif to_show=="description":
+    elif to_show==ShowOption.DESCRIPTION:
         return f"{item['code']} {CODE_ELP[item['type']]}"
-    elif to_show=="both":
+    elif to_show==ShowOption.CODE_AND_DESCRIPTION:
         return ""
 
 def make_id(block, item):

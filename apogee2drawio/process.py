@@ -1,6 +1,9 @@
 import argparse
 from .diagram_maker import make_diagram
+from .diagram_writer import ShowOption
 
+DICT_SHOW={'code_apogee':ShowOption.CODE_APOGEE, 'description':ShowOption.DESCRIPTION, 
+           'both':ShowOption.CODE_AND_DESCRIPTION}
 
 def main():
     parser = argparse.ArgumentParser(description='Process Apogée XML to DrawIO diagram')
@@ -14,7 +17,7 @@ def main():
     if args.infile is None or args.outfile is None:
         parser.error("Please provide both input and output file paths.")
     else:
-        make_diagram(args.infile, args.outfile, to_show=args.show)
+        make_diagram(args.infile, args.outfile, to_show=DICT_SHOW[args.show])
 
 if __name__ == "__main__":
     main()

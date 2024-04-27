@@ -125,11 +125,6 @@ def drawlink(root, src, dst, label=None, sourcePort=None):
                             source=id_source, target=target, edge="1")
     g=etree.Element('mxGeometry', width="50", height="50", relative="1")
     g.set('as','geometry')
-    if linkshift or (type(linkshift)==type(0) and linkshift==0):
-        ga=etree.Element('Array', {"as": "points"})
-        gap=etree.Element('mxPoint', {"x": str(linkshift), "y": str(y)})
-        ga.append(gap)
-        g.append(ga)
     container.append(g)
     root.append(container)
     if label==None:

@@ -14,13 +14,13 @@ WIDTH_LEFT_MARGIN=10
 
 STYLE_HEADER="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;\
     startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;\
-        collapsible=0;marginBottom=0;portConstraintRotation=0;rotatable=0;dropTarget=0;resizable=0;fontFamily=Courier New;"
+        collapsible=0;marginBottom=0;portConstraintRotation=0;rotatable=0;dropTarget=0;resizable=0;fontFamily=monospace;"
 STYLE_ITEM="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;\
     overflow=hidden;points=[[0,0.5],[1,0.5]];\
-        portConstraint=eastwest;rotatable=0;locked=1;fontFamily=Courier New;spacingLeft=10;"
+        portConstraint=eastwest;rotatable=0;locked=1;fontFamily=monospace;spacingLeft=10;"
 STYLE_SUSPENDED_ITEM="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;\
     overflow=hidden;points=[[0,0.5],[1,0.5]];\
-        portConstraint=eastwest;rotatable=0;locked=1;fontStyle=2;fontColor=#CCCCCC;fontFamily=Courier New;spacingLeft=10;"
+        portConstraint=eastwest;rotatable=0;locked=1;fontStyle=2;fontColor=#CCCCCC;fontFamily=monospace;spacingLeft=10;"
 STYLE_LINK="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=1;\
     endSize=8;startSize=8;locked=1;"
 STYLE_LABEL="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;labelBorderColor=default;"

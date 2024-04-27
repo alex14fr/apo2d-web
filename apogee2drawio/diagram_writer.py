@@ -132,7 +132,7 @@ def drawlink(root, src, dst, label=None, sourcePort=None):
     # Add a label
     container=etree.Element('mxCell', id=f'{id}_L', value=label, style=STYLE_LABEL, 
                             connectable="0", vertex="1", parent=id)
-    g=etree.Element('mxGeometry', relative="1")
+    g=etree.Element('mxGeometry', relative="1", x="-1")
     g.set('as','geometry')
     p=etree.Element('mxPoint')
     p.set('as','offset')

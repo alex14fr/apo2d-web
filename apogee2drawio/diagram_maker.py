@@ -18,7 +18,6 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
         for k in blocks:
             widths_level[i]+=width_block(blocks[k], to_show)
     y=TOP_POS
-    linkshift=LEFT_POS
     for i in range(len(graph)):
         level=graph[i]
         # Draw blocks:

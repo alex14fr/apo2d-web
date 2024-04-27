@@ -1,4 +1,4 @@
-from .diagram_writer import makemxfile, drawblock, drawlink, write_mxfile, height_block, WIDTH_ITEM
+from .diagram_writer import makemxfile, drawblock, drawlink, write_mxfile, height_block, width_block, ShowOption
 from .apogee_parser import parse_doc
 from .data_filter import prepare_graph
 
@@ -7,28 +7,35 @@ HORIZONTAL_SPACING=40
 TOP_POS=120
 LEFT_POS=120
 
-def make_diagram(infile, outfile):
+def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     mxfile, root=makemxfile()
     data=parse_doc(infile)
     graph=prepare_graph(data)
+    widths_level=[]
+    for i in range(len(graph)):
+        widths_level.append(0)
+        blocks=graph[i]['blocks']
+        for k in blocks:
+            widths_level[i]+=width_block(blocks[k], to_show)
     y=TOP_POS
     linkshift=LEFT_POS
     for i in range(len(graph)):
         level=graph[i]
         # Draw blocks:
-        x=LEFT_POS
+        x=LEFT_POS-widths_level[i]*.5
         blocks=level['blocks']
         h=0
         for k in blocks:
             block=blocks[k]
-            (x,y)=drawblock(root, blocks[k], (x, y))
-            x+=HORIZONTAL_SPACING
+            w=width_block(block, to_show)
+            drawblock(root, blocks[k], (x, y), to_show)
+            x+=(w+HORIZONTAL_SPACING)
             h=max(h, height_block(block))
         y+=(h+LAYER_SPACING)
         # Draw links:
         uplinks=level['uplinks']
-        leftmost=True
-        linkshift-=10
+        child_number=0
+        west_east_cutoff=int((1+len(uplinks))*.5) #favor west for odd number of children
         for u in uplinks:
             if i==0:
                 raise ValueError(f'Uplink found on the top level')
@@ -43,7 +50,7 @@ def make_diagram(infile, outfile):
                 if 'min' in u and 'max' in u:
                     if u['min']!=None and u['max']!=None:
                         label=f"{u['min']}-{u['max']}"
-                drawlink(root, src=src, dst=dst, label=label, linkshift=(linkshift if leftmost else False), y=y-(h+LAYER_SPACING))
-                if leftmost:
-                    leftmost=False
+                sourcePort=("west" if child_number<west_east_cutoff  else "east")
+                drawlink(root, src=src, dst=dst, label=label, sourcePort=sourcePort)
+            child_number+=1
     write_mxfile(mxfile, outfile)

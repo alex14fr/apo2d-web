@@ -32,13 +32,24 @@ Once apogee2drawio is installed, you can use it from the command line to process
 ```bash
 python -m apogee2drawio.process -in input.xml -out output.drawio
 ```
-This command will process the XML file `input.xml` and generate a DrawIO diagram saved as `output.drawio`.
+This command will process the XML file `input.xml` and generate a DrawIO diagram saved as `output.drawio`. The generated diagram will display Apogée codes for ELPs. A detailed description of each ELP will appear as a tooltip when hovering the mouse over the corresponding item."
+
+```bash
+python -m apogee2drawio.process -in input.xml -out output.drawio -s description
+```
+The generated diagram will display detailed descriptions of ELPs, with Apogée codes appearing as tooltips.
+
+```bash
+python -m apogee2drawio.process -in input.xml -out output.drawio -s both
+```
+Both the Apogée codes and the details of ELPs will be shown.
 
 Command Line Options
 - `-in`: Path to the input XML file containing the diploma decomposition from Apogée.
 - `-out`: Path to save the output DrawIO diagram.
+- `-s`: Information to display (`code_apogee`, `description` or `both`). The default is `code_apogee`.
 
-The generated diagram can then be opened in the DrawIO application to adjust the layout of blocks. (The topology of links is conserved as blocks are moved across the page.) You can save the new layout and keep the diagram in the DrawIO format or export it, for instance, as a PDF. Note, however, that exported diagrams lose the tooltip information about the full names of the pedagogical elements.
+The generated diagram can then be opened in the DrawIO application to adjust the layout of blocks. (The topology of links is conserved as blocks are moved across the page.) You can save the new layout and keep the diagram in the DrawIO format or export it, for instance, as a PDF. Note, however, that exported diagrams lose the tooltip information.
 
 ## Support
 For any questions, issues, or feedback, please open an issue on the GitHub repository. We welcome contributions and suggestions to improve this tool.

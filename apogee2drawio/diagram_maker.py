@@ -11,11 +11,17 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     mxfile, root=makemxfile()
     data=parse_doc(infile)
     graph=prepare_graph(data)
+    widths_level=[]
+    for i in range(len(graph)):
+        widths_level.append(0)
+        blocks=graph[i]['blocks']
+        for k in blocks:
+            widths_level[i]+=width_block(blocks[k], to_show)
     y=TOP_POS
     for i in range(len(graph)):
         level=graph[i]
         # Draw blocks:
-        x=LEFT_POS
+        x=LEFT_POS-widths_level[i]*.5
         blocks=level['blocks']
         h=0
         for k in blocks:

@@ -1,4 +1,4 @@
-from .diagram_writer import makemxfile, drawblock, drawlink, write_mxfile, height_block, WIDTH_ITEM
+from .diagram_writer import makemxfile, drawblock, drawlink, write_mxfile, height_block, width_block, ShowOption
 from .apogee_parser import parse_doc
 from .data_filter import prepare_graph
 
@@ -7,7 +7,7 @@ HORIZONTAL_SPACING=40
 TOP_POS=120
 LEFT_POS=120
 
-def make_diagram(infile, outfile):
+def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     mxfile, root=makemxfile()
     data=parse_doc(infile)
     graph=prepare_graph(data)
@@ -20,8 +20,9 @@ def make_diagram(infile, outfile):
         h=0
         for k in blocks:
             block=blocks[k]
-            drawblock(root, blocks[k], (x, y))
-            x+=(WIDTH_ITEM+HORIZONTAL_SPACING)
+            w=width_block(block, to_show)
+            drawblock(root, blocks[k], (x, y), to_show)
+            x+=(w+HORIZONTAL_SPACING)
             h=max(h, height_block(block))
         y+=(h+LAYER_SPACING)
         # Draw links:

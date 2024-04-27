@@ -33,6 +33,8 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
         y+=(h+LAYER_SPACING)
         # Draw links:
         uplinks=level['uplinks']
+        child_number=0
+        west_east_cutoff=int((1+len(uplinks))*.5) #favor west for odd number of children
         for u in uplinks:
             if i==0:
                 raise ValueError(f'Uplink found on the top level')
@@ -47,5 +49,7 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
                 if 'min' in u and 'max' in u:
                     if u['min']!=None and u['max']!=None:
                         label=f"{u['min']}-{u['max']}"
-                drawlink(root, src=src, dst=dst, label=label)
+                sourcePort=("west" if child_number<west_east_cutoff  else "east")
+                drawlink(root, src=src, dst=dst, label=label, sourcePort=sourcePort)
+            child_number+=1
     write_mxfile(mxfile, outfile)

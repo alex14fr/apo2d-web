@@ -21,8 +21,8 @@ STYLE_ITEM="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle
 STYLE_SUSPENDED_ITEM="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;\
     overflow=hidden;points=[[0,0.5],[1,0.5]];\
         portConstraint=eastwest;rotatable=0;locked=1;fontStyle=2;fontColor=#CCCCCC;fontFamily=monospace;spacingLeft=10;"
-STYLE_LINK="edgeStyle=segmentEdgeStyle;endArrow=classic;html=1;curved=0;rounded=1;\
-    endSize=8;startSize=8;locked=1;"
+STYLE_LINK="edgeStyle=orthogonalEdgeStyle;endArrow=classic;html=1;curved=0;rounded=1;\
+    endSize=8;startSize=8;locked=1;targetPortConstraint=north;"
 STYLE_LABEL="edgeLabel;resizable=0;html=1;align=center;verticalAlign=middle;labelBorderColor=default;"
 
 # These codes are taken from Apogée's "référenciel", and shortened to three symbols 
@@ -115,12 +115,13 @@ def drawblock(root, block, pos, to_show="code_apogee"):
         root.append(uo)
     
 
-def drawlink(root, src, dst, label=None):
+def drawlink(root, src, dst, label=None, sourcePort=None):
     block, n=src
     id_source=make_id(block, block['items'][n])
     target=make_header(dst['list'])
     id=f'{id_source}__{target}'
-    container=etree.Element('mxCell', id=id, value="", style=STYLE_LINK, parent="1", 
+    style=STYLE_LINK+(f"sourcePortConstraint={sourcePort}" if sourcePort!=None else "")
+    container=etree.Element('mxCell', id=id, value="", style=style, parent="1", 
                             source=id_source, target=target, edge="1")
     g=etree.Element('mxGeometry', width="50", height="50", relative="1")
     g.set('as','geometry')

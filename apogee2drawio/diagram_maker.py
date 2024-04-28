@@ -6,7 +6,7 @@ import random
 LAYER_SPACING=80
 HORIZONTAL_SPACING=40
 TOP_POS=120
-LEFT_POS=120
+LEFT_POS=0
 
 def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     mxfile, root=makemxfile()
@@ -14,15 +14,14 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     graph=prepare_graph(data)
     widths_level=[]
     for i in range(len(graph)):
-        widths_level.append(0)
+        widths_level.append(-HORIZONTAL_SPACING)
         blocks=graph[i]['blocks']
         for k in blocks:
-            widths_level[i]+=width_block(blocks[k], to_show)
+            widths_level[i]+=width_block(blocks[k], to_show)+HORIZONTAL_SPACING
     y=TOP_POS
     for i in range(len(graph)):
         level=graph[i]
-        print(i)
-        pprint.pprint(level, indent=4, sort_dicts=False)
+        #pprint.pprint(level, indent=4, sort_dicts=False)
         blocks=level['blocks']
         uplinks=level['uplinks']
         links=[]
@@ -46,7 +45,7 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
                             links.append({"src": (pb, pipos), \
                                 "dst": blocks[lnk['child']], \
                                 "label": lnk['min']+'-'+lnk['max'] \
-                                    if min in lnk and max in lnk and lnk['min']!=None and lnk['max']!=None else None})
+                                    if (lnk['min']!=None and lnk['max']!=None) else None})
                     pipos+=1
             assert(len(blocks_s)==len(blocks))
         # Draw blocks:

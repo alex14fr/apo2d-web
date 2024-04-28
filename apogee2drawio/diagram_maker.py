@@ -6,7 +6,7 @@ import random
 LAYER_SPACING=80
 HORIZONTAL_SPACING=40
 TOP_POS=120
-LEFT_POS=120
+LEFT_POS=0
 
 def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     mxfile, root=makemxfile()
@@ -14,10 +14,10 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
     graph=prepare_graph(data)
     widths_level=[]
     for i in range(len(graph)):
-        widths_level.append(0)
+        widths_level.append(-HORIZONTAL_SPACING)
         blocks=graph[i]['blocks']
         for k in blocks:
-            widths_level[i]+=width_block(blocks[k], to_show)
+            widths_level[i]+=width_block(blocks[k], to_show)+HORIZONTAL_SPACING
     y=TOP_POS
     for i in range(len(graph)):
         level=graph[i]

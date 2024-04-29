@@ -16,7 +16,7 @@ async function loadXml(ev) {
 function debloq() {
 	if(nready>=2) {
 		document.getElementById("chargement").style.display="none";
-		document.querySelector("form").style.display="block";
+		document.querySelector("form").style.display="flex";
 		ifrm.style.display="block";
 		wResize();
 	}

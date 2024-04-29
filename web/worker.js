@@ -1,6 +1,6 @@
 "use strict";
 var pyo;
-importScripts("https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js");
+self.importScripts("https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js");
 
 async function loadpy() {
 	pyo=await loadPyodide();

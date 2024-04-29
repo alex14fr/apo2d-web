@@ -1,6 +1,5 @@
 "use strict";
 
-var pyo;
 var ouvrBtn, fileIn, ifrm;
 var nready=0;
 

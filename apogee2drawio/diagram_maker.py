@@ -1,7 +1,6 @@
 from .diagram_writer import makemxfile, drawblock, drawlink, write_mxfile, height_block, width_block, ShowOption
 from .apogee_parser import parse_doc
 from .data_filter import prepare_graph
-import random
 
 LAYER_SPACING=80
 HORIZONTAL_SPACING=40
@@ -59,10 +58,11 @@ def make_diagram(infile, outfile, to_show=ShowOption.CODE_APOGEE):
             h=max(h, height_block(block))
         y+=(h+LAYER_SPACING)
         # Draw links:
-        west_east_cutoff=int(((1 if random.uniform(0,1)<.5 else 0)+len(uplinks))*.5)
-        i=0
+        west_east_cutoff=int(((i%2)+len(blocks))*.5)
+        print(west_east_cutoff)
+        l=0
         for link in links:
-            sourcePort=("west" if i<west_east_cutoff  else "east")
+            sourcePort=("west" if l<west_east_cutoff  else "east")
             drawlink(root, src=link['src'], dst=link['dst'], label=link['label'], sourcePort=sourcePort)
-            i=i+1
+            l=l+1
     write_mxfile(mxfile, outfile)

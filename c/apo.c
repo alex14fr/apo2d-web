@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
 		perror("mmap");
 		exit(1);
 	}
-	itemMapCap=1024;
+	itemMapCap=16536;
 	itemMap=malloc(itemMapCap);
 	if(!itemMap) { perror("malloc itemMap"); exit(1); }
 	parseApobuf(buf, sb.st_size, stdout);
@@ -344,12 +344,12 @@ void apo_parse_tmp(void) {
 	close(fd);
 	FILE *f=fopen("tmp.gv", "w+");
 	if(!f) { perror("fopen"); exit(1); }
-	itemMapCap=1024;
+	itemMapCap=16536;
 	itemMap=malloc(itemMapCap);
 	if(!itemMap) { perror("malloc itemMap"); exit(1); }
 	parseApobuf(gbuf, sb.st_size, f);
 	fprintf(stderr, "itemMapCap=%d\n", itemMapCap);
-	itemMapCap=1024;
+	itemMapCap=16536;
 	itemMapIdx=0;
 	fclose(f);
 #ifndef USE_MMAP

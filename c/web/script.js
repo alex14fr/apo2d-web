@@ -15,6 +15,7 @@ function loadXml(ev) {
 			var svg=viz.renderSVGElement(gv);
 			wResize();
 			gdiv.replaceChildren(svg);
+//			svgPanZoom(svg, {fit:1,center:1});
 			});
 		});
 }

@@ -345,6 +345,7 @@ void apo_parse_tmp(void) {
 		FILE *f=fopen("tmp.html", "w+");
 		if(!f) { perror("fopen"); exit(1); }
 		parseRgc(gbuf, sb.st_size, f);
+		fclose(f);
 	} else {
 		FILE *f=fopen("tmp.gv", "w+");
 		if(!f) { perror("fopen"); exit(1); }

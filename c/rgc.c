@@ -42,7 +42,7 @@ void parseGTRR(FILE *out, xmldoc_t *x) {
 void parseRgc(char *buf, int len, FILE *out) {
 	fprintf(out, "<!doctype html><html><style>table { border-collapse: collapse; width: 700px } tt { font-size: 140%c } td:nth-child(1), td:nth-child(3), td:nth-child(4) { width: 60px; text-align: center }</style>\n", '%');
 
-	xmldoc_t x, xlistrgc, jnk, xrgc;
+	xmldoc_t x, xlistrgc, xrgc;
 
 	xmlInit(&x, buf, len, NULL, 0);
 	xmlEnterCk(&x, "ECRGCR10");

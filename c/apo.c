@@ -200,7 +200,7 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	xmlVisit(&x, &jnk); /* C_NB_ENR */
 	xmlVisit(&x, &jnk); /* C_NB_ENR_FILS */
 
-	xmldoc_t xGCodDip, xCodDip, xCodVrsVdi, xLicVdi, xLicEtp, xLicElp;
+	xmldoc_t xGCodDip, xCodDip, xCodVrsVdi, xLicVdi, xVrsVet, xLicEtp, xLicElp;
 	xmlEnterCk(&xListGCodDip, "LIST_G_COD_DIP");
 	xmlVisit(&xListGCodDip, &xGCodDip);
 	xmlEnterCk(&xGCodDip, "G_COD_DIP");
@@ -208,15 +208,16 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	xmlVisit(&xGCodDip, &xCodVrsVdi);
 	xmlVisit(&xGCodDip, &jnk); /* LIC_DIP */
 	xmlVisit(&xGCodDip, &xLicVdi); 
-	xmlVisit(&xGCodDip, &jnk); /* VRS_VET */
+	xmlVisit(&xGCodDip, &xVrsVet); 
 	xmlVisit(&xGCodDip, &xLicEtp); /* LIC_ETP */
 	xmlVisit(&xGCodDip, &xListGCodLse);
 
-	char *codip=alloca(VCAP), *covdi=alloca(VCAP), *nomdip=alloca(VCAP), *nometp=alloca(VCAP);
+	char *codip=alloca(VCAP), *covdi=alloca(VCAP), *nomdip=alloca(VCAP), *nometp=alloca(VCAP), *covet=alloca(VCAP);
 	xmlEntcpy(&xCodDip, codip, VCAP);
 	xmlEntcpy(&xCodVrsVdi, covdi, VCAP);
 	xmlEntcpy(&xLicVdi, nomdip, VCAP);
 	xmlEntcpy(&xLicEtp, nometp, VCAP);
+	xmlEntcpy(&xVrsVet, covet, VCAP);
 
 	xmlEnterCk(&xListGCodLse, "LIST_G_COD_LSE");
 	xmlVisit(&xListGCodLse, &xGCodLse);
@@ -233,7 +234,7 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	fprintf(out, "digraph { graph[rankdir=\"TB\"]; \nnode[fontname=Courier; fontsize=10; shape=box]; \nedge[fontname=Courier; fontsize=8; ]\n");
 
 #ifndef NOSPECIALTOP
-	fprintf(out, "root0 [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>(DIP) %s : %s</B><BR/><B>(VET) %s : %s</B></TD></TR></TABLE>> ];\nroot0 -> root\n", codip, nomdip, covdi, nometp);
+	fprintf(out, "root0 [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>%s DIP V%s : %s</B><BR/><B>ETP V%s : %s</B></TD></TR></TABLE>> ];\nroot0 -> root\n", codip, covdi, nomdip, covet, nometp);
 	fprintf(out, "root [ label=<\n\t<TABLE BORDER=\"0\"><TR><TD><B>%s %s : %s</B></TD></TR>\n", lcode, natureElt(ltype), lnom);
 #endif
 

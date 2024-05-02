@@ -323,46 +323,42 @@ int main(int argc, char **argv) {
 }
 #else
 void apo_parse_tmp(void) {
+	unlink("tmp.gv");
+	unlink("tmp.html");
 	int fd=open("tmp.xml", O_RDONLY);
 	if(fd<0) { perror("open"); exit(1); }
 	struct stat sb;
 	fstat(fd, &sb);
-#ifndef USE_MMAP
-	gbuf=malloc(sb.st_size);
-	if(!gbuf) {
-		perror("malloc");
-		exit(1);
-	}
-	int nr=0;
-	do {
-		int nnr=read(fd, gbuf, sb.st_size);
-		if(nnr<=0) { perror("read"); exit(1); }
-		nr+=nnr;
-	} while(nr<sb.st_size);		
-#else
 	gbuf=mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 	if(gbuf==MAP_FAILED) {
 		perror("mmap");
 		exit(1);
 	}
-#endif
 	close(fd);
-	FILE *f=fopen("tmp.gv", "w+");
-	if(!f) { perror("fopen"); exit(1); }
-	itemMapCap=16536;
-	itemMap=malloc(itemMapCap);
-	if(!itemMap) { perror("malloc itemMap"); exit(1); }
-	parseApobuf(gbuf, sb.st_size, f);
-	fprintf(stderr, "itemMapCap=%d\n", itemMapCap);
-	itemMapCap=16536;
-	itemMapIdx=0;
-	fclose(f);
-#ifndef USE_MMAP
-	free(gbuf);
-#else
+	char *rech="<ECRGCR10>";
+	int n=strlen(rech), nf=0;
+	for(int i=0; i<128 && nf<n; i++) {
+		if(rech[nf]==gbuf[i]) nf++;
+		else nf=0;
+	}
+	if(nf==n) {
+		FILE *f=fopen("tmp.html", "w+");
+		if(!f) { perror("fopen"); exit(1); }
+		parseRgc(gbuf, sb.st_size, f);
+	} else {
+		FILE *f=fopen("tmp.gv", "w+");
+		if(!f) { perror("fopen"); exit(1); }
+		itemMapCap=16536;
+		itemMap=malloc(itemMapCap);
+		if(!itemMap) { perror("malloc itemMap"); exit(1); }
+		parseApobuf(gbuf, sb.st_size, f);
+		fprintf(stderr, "itemMapCap=%d\n", itemMapCap);
+		itemMapCap=16536;
+		itemMapIdx=0;
+		fclose(f);
+		free(itemMap);
+	}
 	munmap(gbuf, sb.st_size);
-#endif
-	free(itemMap);
 }
 #endif
 

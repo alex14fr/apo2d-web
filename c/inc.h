@@ -76,5 +76,10 @@ void xmlStrcpy(xmldoc_t *x, char *v, int vcap);
 void xmlEntcpy(xmldoc_t *x, char *v, int vcap);
 void xmlEnterCk(xmldoc_t *x, char *expect);
 void xmlCpynext(xmldoc_t *x, char *v, int vcap);
+
+
+
+void parseRgc(char*,int,FILE*);
 #endif
+
 

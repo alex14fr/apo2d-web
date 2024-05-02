@@ -86,13 +86,13 @@ void parseRgc(char *buf, int len, FILE *out) {
 			xmldoc_t xlistgtrr, gtrr;
 			xmlVisit(&xrgc, &xlistgtrr);
 			xmlEnterCk(&xlistgtrr, "LIST_G_TRR");
-			fprintf(out, "<ul>\n");
+			fprintf(out, "<h5>Résultat: </h5>\n<ul>\n");
 			while(xmlVisit(&xlistgtrr, &gtrr)==VIS_OK) {
 				parseGTRR(out, &gtrr);
 			}
-			fprintf(out, "</ul>\nSinon: <tt><b>%s</b></tt>\n", resDef);
+			fprintf(out, "<li>Sinon: <tt><b>%s</b></tt>\n</ul>\n", resDef);
 		} else {
-			fprintf(out, "Formule: <tt>%s</tt>", formuleNote);
+			fprintf(out, "<h5>Formule: </h5>\n<tt>%s</tt>", formuleNote);
 		}
 	}
 }

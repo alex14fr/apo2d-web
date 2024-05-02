@@ -120,7 +120,7 @@ void markAllAsDead(xmldoc_t *x) {
 }
 
 void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
-	fprintf(out, "# Niveau %d\n", niv);
+	//fprintf(out, "# Niveau %d\n", niv);
 	xmlEnterCk(x, "LIST_G_COD_ELP_PERE1");
 	xmldoc_t xGCodElpPere1;
 	xmldoc_t xCodElpPere1, xCodLse2, xListGCodElpFils, xListGCodLse1;
@@ -167,7 +167,7 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 
 		itemMapFind(itemPere, locPere);
 		if(memcmp(locPere, "DEAD:L111", 9)!=0) {
-			fprintf(out, "# Liste : %s\n# Item père : %s\n", nomListe, itemPere);
+			//fprintf(out, "# Liste : %s\n# Item père : %s\n", nomListe, itemPere);
 			fprintf(out, "%s [ label=<\n\t<TABLE BORDER=\"0\">\n\t<TR><TD><B>%s %s : %s</B></TD></TR>\n", nomListe, nomListe, natureElt(natureEl), descrListe);
 			parseListGCodElpFils(&xListGCodElpFils, nomListe, out);
 			fprintf(out, "\t</TABLE>\n\t>\n]\n");

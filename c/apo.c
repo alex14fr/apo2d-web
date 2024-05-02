@@ -69,7 +69,7 @@ void itemMapFind(char *item, char *pos) {
 }
 
 void parseListGCodElpFils(xmldoc_t *x, char *nomListe, FILE *out) {
-	char *descrFils=alloca(VCAP), *natureEl=alloca(VCAP), *natureEltAbbr, *suspendu=alloca(VCAP);
+	char *descrFils=alloca(VCAP), *natureEl=alloca(VCAP), *suspendu=alloca(VCAP);
 	char *codFils=alloca(VCAP);
 	xmlEnterCk(x, "LIST_G_COD_ELP_FILS");
 	xmldoc_t xGCodElpFils;
@@ -97,10 +97,9 @@ void parseListGCodElpFils(xmldoc_t *x, char *nomListe, FILE *out) {
 		xmlEntcpy(&xLicElp1, descrFils, VCAP);
 		xmlEntcpy(&xLicNel1, natureEl, VCAP);
 		xmlEntcpy(&xTemSusElp1, suspendu, VCAP);
-		natureEltAbbr=natureElt(natureEl);
 
 		xmlEntcpy(&xCodElpFils, codFils, VCAP);
-		fprintf(out, "\t<TR><TD PORT=\"L%d\">%s%s %s - %s%s</TD></TR>\n", pos, (suspendu[0]=='N' ? "" : SUSP), codFils, natureEltAbbr, descrFils, (suspendu[0]=='N' ? "" : SUSP2));
+		fprintf(out, "\t<TR><TD PORT=\"L%d\">%s%s %s : %s%s</TD></TR>\n", pos, (suspendu[0]=='N' ? "" : SUSP), codFils, natureElt(natureEl), descrFils, (suspendu[0]=='N' ? "" : SUSP2));
 		itemMapAdd(codFils, nomListe, pos++);
 	}
 }
@@ -124,7 +123,7 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 	fprintf(out, "# Niveau %d\n", niv);
 	xmlEnterCk(x, "LIST_G_COD_ELP_PERE1");
 	xmldoc_t xGCodElpPere1;
-	xmldoc_t xCodElpPere1, xCodLse2, xListGCodElpFils, xListGCodLse1, xListGCodElp2;
+	xmldoc_t xCodElpPere1, xCodLse2, xListGCodElpFils, xListGCodLse1;
 	xmldoc_t xGCodLse1;
 	xmldoc_t xCodLse1, xLicLse1, xTypLse, jnk, xNbreMin, xNbreMax;
 	char nomListe[VCAP], itemPere[VCAP];
@@ -140,7 +139,6 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 		xmlVisit(&xGCodElpPere1, &xCodLse2);
 		xmlVisit(&xGCodElpPere1, &xListGCodElpFils);
 		xmlVisit(&xGCodElpPere1, &xListGCodLse1);
-		xmlVisit(&xGCodElpPere1, &xListGCodElp2);
 		
 		xmlEntcpy(&xCodElpPere1, itemPere, VCAP);
 		xmlEntcpy(&xCodLse2, nomListe, VCAP);
@@ -157,9 +155,7 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 		xmlVisit(&xGCodLse1, &xNbreMax);
 		xmlEntcpy(&xLicLse1, descrListe, VCAP);
 		xmlEntcpy(&xTypLse, natureEl, VCAP);
-		char *natureEltAbbr=natureElt(natureEl);
 		minmaxStr[0]=0;
-		int minlen, maxlen;
 		if(xmlNextTokIgnPeek(&xNbreMin)==TOK_OPEN &&
 			xmlNextTokIgnPeek(&xNbreMax)==TOK_OPEN) {
 			xmlEntcpy(&xNbreMin, nmin, VCAP);
@@ -168,25 +164,11 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 				snprintf(minmaxStr, 128, " [label=\"%s - %s\"]", nmin, nmax);
 		}
 
-#ifndef NOSPECIALTOP
-		if(niv == 0) {
-			char ppos[8];
-			itemMapFind(itemPere, ppos);
-			if(memcmp(ppos, "DEAD:L111", 9)!=0) {
-				fprintf(out, "%s [ label=<\n\t<TABLE PORT=\"L0\" BORDER=\"0\">\n\t<TR><TD><B>%s</B></TD></TR></TABLE>\n>]\n", itemPere, itemPere);
-				itemMapAdd(itemPere, itemPere, 0);
-				fprintf(out, "root:L0 -> %s:L0:n\n", itemPere);
-			} else {
-				fprintf(out, "%s [ label=<\n\t<TABLE PORT=\"L0\" BORDER=\"0\">\n\t<TR><TD><B><FONT COLOR=\"gray\">%s</FONT></B></TD></TR></TABLE>\n>]\n", itemPere, itemPere);
-				fprintf(out, "root:L0 -> %s:L0:n\n", itemPere);
-			}
-		}
-#endif
 
 		itemMapFind(itemPere, locPere);
 		if(memcmp(locPere, "DEAD:L111", 9)!=0) {
 			fprintf(out, "# Liste : %s\n# Item père : %s\n", nomListe, itemPere);
-			fprintf(out, "%s [ label=<\n\t<TABLE BORDER=\"0\">\n\t<TR><TD><B>%s %s - %s</B></TD></TR>\n", nomListe, nomListe, natureEltAbbr, descrListe);
+			fprintf(out, "%s [ label=<\n\t<TABLE BORDER=\"0\">\n\t<TR><TD><B>%s %s : %s</B></TD></TR>\n", nomListe, nomListe, natureElt(natureEl), descrListe);
 			parseListGCodElpFils(&xListGCodElpFils, nomListe, out);
 			fprintf(out, "\t</TABLE>\n\t>\n]\n");
 			fprintf(out, "%s -> %s:n%s\n", locPere, nomListe, minmaxStr);
@@ -202,8 +184,8 @@ void parseApobuf(char *buf, int len, FILE *out) {
 #endif
 	xmldoc_t x;
 	xmldoc_t xListGNiveau, jnk, xListGCodDip;
-	xmldoc_t xListGCodLse, xGCodLse, xListGCodElp, xGCodElp, xCodElp, xTemSusElp; 
-	char temsus[16], codelp[VCAP];
+	xmldoc_t xListGCodLse, xGCodLse, xListGCodElp, xGCodElp, xCodElp, xTemSusElp, xLicNel; 
+	char temsus[16], codelp[VCAP], nomlp[VCAP], naturelp[VCAP];
 	VisStat vs;
 
 #ifndef XML_USE_DEPTH_COUNT
@@ -218,7 +200,7 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	xmlVisit(&x, &jnk); /* C_NB_ENR */
 	xmlVisit(&x, &jnk); /* C_NB_ENR_FILS */
 
-	xmldoc_t xGCodDip, xCodDip, xCodVrsVdi, xLicVdi, xLicEtp;
+	xmldoc_t xGCodDip, xCodDip, xCodVrsVdi, xLicVdi, xLicEtp, xLicElp;
 	xmlEnterCk(&xListGCodDip, "LIST_G_COD_DIP");
 	xmlVisit(&xListGCodDip, &xGCodDip);
 	xmlEnterCk(&xGCodDip, "G_COD_DIP");
@@ -229,28 +211,6 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	xmlVisit(&xGCodDip, &jnk); /* VRS_VET */
 	xmlVisit(&xGCodDip, &xLicEtp); /* LIC_ETP */
 	xmlVisit(&xGCodDip, &xListGCodLse);
-	xmlEnterCk(&xListGCodLse, "LIST_G_COD_LSE");
-	xmlVisit(&xListGCodLse, &xGCodLse);
-	xmlEnterCk(&xGCodLse, "G_COD_LSE");
-	for(int i=0; i<6; i++) {
-		xmlVisit(&xGCodLse, &jnk); /* COD_LSE .. NBR_MAX_ELP... */
-	}
-	xmlVisit(&xGCodLse, &xListGCodElp); /* LIST_G_COD_ELP */
-	xmlEnterCk(&xListGCodElp, "LIST_G_COD_ELP");
-	do {
-		vs=xmlVisit(&xListGCodElp, &xGCodElp);
-		if(vs==VIS_LAST) break;
-		xmlEnterCk(&xGCodElp, "G_COD_ELP");
-		xmlVisit(&xGCodElp, &jnk); /* NBR_CRD_ELP1 */
-		xmlVisit(&xGCodElp, &xCodElp);
-		xmlVisit(&xGCodElp, &jnk); /* LIC_ELP */
-		xmlVisit(&xGCodElp, &xTemSusElp);
-		xmlEntcpy(&xTemSusElp, temsus, 16);
-		if(temsus[0]=='O') {
-			xmlEntcpy(&xCodElp, codelp, VCAP);
-			itemMapAdd(codelp, "DEAD", 111);
-		}
-	} while(1);
 
 	char *codip=alloca(VCAP), *covdi=alloca(VCAP), *nomdip=alloca(VCAP), *nometp=alloca(VCAP);
 	xmlEntcpy(&xCodDip, codip, VCAP);
@@ -258,10 +218,65 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	xmlEntcpy(&xLicVdi, nomdip, VCAP);
 	xmlEntcpy(&xLicEtp, nometp, VCAP);
 
+	xmlEnterCk(&xListGCodLse, "LIST_G_COD_LSE");
+	xmlVisit(&xListGCodLse, &xGCodLse);
+	xmlEnterCk(&xGCodLse, "G_COD_LSE");
+	xmldoc_t xCodLse, xLicLse, xTypLse1;
+	char lcode[VCAP], lnom[VCAP], ltype[VCAP];
+	xmlVisit(&xGCodLse, &xCodLse);
+	xmlEntcpy(&xCodLse, lcode, VCAP);
+	xmlVisit(&xGCodLse, &xLicLse);
+	xmlEntcpy(&xLicLse, lnom, VCAP);
+	xmlVisit(&xGCodLse, &xTypLse1);
+	xmlEntcpy(&xTypLse1, ltype, VCAP);
+
 	fprintf(out, "digraph { graph[rankdir=\"TB\"]; \nnode[fontname=Courier; fontsize=10; shape=box]; \nedge[fontname=Courier; fontsize=8; ]\n");
 
 #ifndef NOSPECIALTOP
-	fprintf(out, "root [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>DIP: %s - %s</B><BR/><B>VET: %s - %s</B></TD></TR></TABLE>> ]\n", codip, nomdip, covdi, nometp);
+	fprintf(out, "root0 [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>(DIP) %s : %s</B><BR/><B>(VET) %s : %s</B></TD></TR></TABLE>> ];\nroot0 -> root\n", codip, nomdip, covdi, nometp);
+	fprintf(out, "root [ label=<\n\t<TABLE BORDER=\"0\"><TR><TD><B>%s %s : %s</B></TD></TR>\n", lcode, natureElt(ltype), lnom);
+#endif
+
+	for(int i=0; i<3; i++) {
+		xmlVisit(&xGCodLse, &jnk); /* NBR_MIN_ELP, NBR_MAX_ELP... */
+	}
+	xmlVisit(&xGCodLse, &xListGCodElp); /* LIST_G_COD_ELP */
+	xmlEnterCk(&xListGCodElp, "LIST_G_COD_ELP");
+	int pos=0;
+	do {
+		vs=xmlVisit(&xListGCodElp, &xGCodElp);
+		if(vs==VIS_LAST) break;
+		xmlEnterCk(&xGCodElp, "G_COD_ELP");
+		xmlVisit(&xGCodElp, &jnk); /* NBR_CRD_ELP1 */
+		xmlVisit(&xGCodElp, &xCodElp);
+		xmlEntcpy(&xCodElp, codelp, VCAP);
+		xmlVisit(&xGCodElp, &xLicElp); 
+		xmlEntcpy(&xLicElp, nomlp, VCAP);
+		xmlVisit(&xGCodElp, &xTemSusElp);
+		xmlEntcpy(&xTemSusElp, temsus, 16);
+		xmlVisit(&xGCodElp, &jnk); /* ETA_ELP */
+		xmlVisit(&xGCodElp, &xLicNel);
+		xmlEntcpy(&xLicNel, naturelp, VCAP);
+
+		char suspB[32]="", suspE[8]="";
+		if(temsus[0]=='O') {
+			itemMapAdd(codelp, "DEAD", 111);
+#ifndef NOSPECIALROOT
+			memcpy(suspB, "<FONT COLOR=\"gray\">\0", 20);
+			memcpy(suspE, "</FONT>\0", 8);
+#endif
+		} else {
+			itemMapAdd(codelp, "root", pos);
+		}
+
+#ifndef NOSPECIALROOT
+		fprintf(out, "\t<TR><TD PORT=\"L%d\">%s%s %s : %s%s</TD></TR>\n", pos, suspB, codelp, natureElt(naturelp), nomlp, suspE);
+#endif
+		pos++;
+	} while(1);
+
+#ifndef NOSPECIALROOT
+	fprintf(out, "</TABLE>>]; \n");
 #endif
 
 	xmlEnterCk(&xListGNiveau, "LIST_G_NIVEAU");

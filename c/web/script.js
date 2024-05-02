@@ -1,6 +1,6 @@
 "use strict";
 
-var ouvrBtn, fileIn, gv, svg, gdiv;
+var ouvrBtn, fileIn, gv, svg, gdiv, iviz;
 
 function btnOuvrir(ev) {
 	fileIn.click();
@@ -11,7 +11,7 @@ function loadXml(ev) {
 		FS.writeFile("tmp.xml", f);
 		ccall("apo_parse_tmp");
 		var gv=FS.readFile("tmp.gv", {"encoding":"utf8"});
-		Viz.instance().then((viz)=> {
+		iviz.then((viz)=> {
 			var svg=viz.renderSVGElement(gv);
 			wResize();
 			gdiv.replaceChildren(svg);
@@ -23,6 +23,7 @@ function wResize(ev) {
 	gdiv.style.width=(window.innerWidth-5)+'px';
 }
 
+iviz=Viz.instance();
 gdiv=document.getElementById("gdiv");
 ouvrBtn=document.getElementById("ouvrir");
 ouvrBtn.addEventListener("click", btnOuvrir);

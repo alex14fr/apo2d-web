@@ -44,10 +44,14 @@ function wResize(ev) {
 	if(mode==1) {
 		gdiv.style.width=(window.innerWidth-5)+'px';
 		gdiv.style.marginTop=(document.querySelector('form').clientHeight)+'px';
+		ifrm.style.display='none';
+		gdiv.style.display='block';
 	} else {
 		ifrm.style.marginTop=(document.querySelector('form').clientHeight)+'px';
 		ifrm.style.width=(ifrm.parentElement.clientWidth-5)+"px";
 		ifrm.style.height=(window.innerHeight-document.querySelector("form").clientHeight-20)+"px";
+		ifrm.style.display='initial';
+		gdiv.style.display='none';
 	}
 }
 

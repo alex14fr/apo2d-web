@@ -1,0 +1,4 @@
+#!/bin/sh
+#
+~/emscripten/emcc --closure 0 --no-entry -sMALLOC=emmalloc -sEXPORTED_FUNCTIONS="_apo_parse_tmp" -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE='[$ccall,$FS]' -sENVIRONMENT=web -O1 -sASSERTIONS=0 -sALLOW_MEMORY_GROWTH=1 -sINVOKE_RUN=0 -o apo.js ../apo.c ../xml.c
+

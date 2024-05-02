@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as etree
+import pprint
 
 def parse_doc(filename):
     doc = etree.parse(filename)
@@ -48,4 +49,5 @@ def parse_doc(filename):
                 block['items'].append(item)
             blocks.append(block)
         rv.append(blocks)
+    pprint.pp(rv)
     return rv

@@ -1,0 +1,3 @@
+#!/bin/sh
+rsync -avz apo.js apo.wasm index.html script.js sasmath:wwwdoc/apogee2dot/
+

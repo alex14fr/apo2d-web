@@ -1,0 +1,348 @@
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include "inc.h"
+
+#ifdef __EMSCRIPTEN__
+#define USE_MMAP
+static char *gbuf;
+#endif
+
+static char* itemMap;
+static int itemMapIdx=0;
+static int itemMapCap=0;
+#define VCAP 128
+
+char *naturesElts[]={"Semestre", "SEM", "U.E.", "UE", "U.F.", "UF", "Rés. étape", "RET", "Stage", "STG",
+          "Parcours", "PAR", "Elt à choi", "ELC", "BCC", "BCC", "Année", "AN", "Bloc", "BLC",
+          "Certificat", "CRT", "C.M.", "CM", "Compétence", "CMP", "Cursus", "CUR", "ECUE", "ECU",
+          "Examen", "EXA", "Filière", "FIL", "Matière", "MAT", "Mémoire", "MEM", "Module", "MOD",
+          "Niveau", "NIV", "option", "OPT", "Période", "PER", "Projet", "PRJ", "Section", "SEC",
+          "T.D.", "TD", "T.P.", "TP", "UE  nonADD", "UEF", "UE sansnot", "USN", "U.V.", "UV",
+			 "Obligatoire", "LO", "Obligatoire à choix", "LOX", "Facultative", "LF"};
+
+#define SUSP "<FONT COLOR=\"gray\">"
+#define SUSP2 "</FONT>"
+
+char* natureElt(char *nat) {
+	int n=sizeof(naturesElts)/(2*sizeof(char*));
+	for(int i=0; i<n; i++) {
+		if(strcasecmp(nat, naturesElts[2*i])==0)
+			return naturesElts[2*i+1];
+	}
+	return(nat);
+}
+
+void itemMapAdd(char *item, char *nomListe, int pos) {
+	char str[128];
+	int len=snprintf(str, 128, "%s%c%s:L%d", item, 0, nomListe, pos);
+	if(len<0) { errprintf("itemMapAdd: snprintf error\n"); exit(1); }
+	while(itemMapIdx+len+2>itemMapCap) { 
+		//errprintf("itemMapAdd: realloc\n"); 
+		itemMap=realloc(itemMap, itemMapCap+8192);
+		if(!itemMap) {
+			errprintf("itemMapAdd: realloc failed\n");
+			exit(1);
+		}
+		itemMapCap+=8192;
+	}
+	itemMap[itemMapIdx++]=len+1;
+	memcpy(itemMap+itemMapIdx, str, len+1);
+	itemMapIdx+=len+1;
+}
+
+void itemMapFind(char *item, char *pos) {
+	int i=0;
+	int n=strlen(item);
+	while(i<itemMapIdx) {
+		int len=itemMap[i++];
+		if(memcmp(item, itemMap+i, n+1)==0) {
+			memcpy(pos, itemMap+i+n+1, len-n-1);
+			return;
+		} else {
+			i+=len;
+		}
+	}
+	sprintf(pos, "UNKN");
+}
+
+void parseListGCodElpFils(xmldoc_t *x, char *nomListe, FILE *out) {
+	char *descrFils=alloca(VCAP), *natureEl=alloca(VCAP), *natureEltAbbr, *suspendu=alloca(VCAP);
+	char *codFils=alloca(VCAP);
+	xmlEnterCk(x, "LIST_G_COD_ELP_FILS");
+	xmldoc_t xGCodElpFils;
+	xmldoc_t xCodElpFils, xEtaElpFils, xListGCodElp1;
+	xmldoc_t xGCodElp1;
+	xmldoc_t jnk, xLicElp1, xLicNel1, xTemSusElp1;
+	int pos=0;
+	while(1) {
+		VisStat vs=xmlVisit(x, &xGCodElpFils);
+		if(vs==VIS_LAST) break;
+		xmlEnterCk(&xGCodElpFils, "G_COD_ELP_FILS");
+		xmlVisit(&xGCodElpFils, &xCodElpFils);
+		xmlVisit(&xGCodElpFils, &xEtaElpFils);
+		xmlVisit(&xGCodElpFils, &xListGCodElp1);
+
+		xmlEnterCk(&xListGCodElp1, "LIST_G_COD_ELP1");
+		xmlVisit(&xListGCodElp1, &xGCodElp1);
+
+		xmlEnterCk(&xGCodElp1, "G_COD_ELP1");
+		xmlVisit(&xGCodElp1, &jnk); /* NBR_CRD_ELP */
+		xmlVisit(&xGCodElp1, &jnk); /* COD_ELP1 */
+		xmlVisit(&xGCodElp1, &xLicElp1);
+		xmlVisit(&xGCodElp1, &xLicNel1);
+		xmlVisit(&xGCodElp1, &xTemSusElp1);
+		xmlEntcpy(&xLicElp1, descrFils, VCAP);
+		xmlEntcpy(&xLicNel1, natureEl, VCAP);
+		xmlEntcpy(&xTemSusElp1, suspendu, VCAP);
+		natureEltAbbr=natureElt(natureEl);
+
+		xmlEntcpy(&xCodElpFils, codFils, VCAP);
+		fprintf(out, "\t<TR><TD PORT=\"L%d\">%s%s %s - %s%s</TD></TR>\n", pos, (suspendu[0]=='N' ? "" : SUSP), codFils, natureEltAbbr, descrFils, (suspendu[0]=='N' ? "" : SUSP2));
+		itemMapAdd(codFils, nomListe, pos++);
+	}
+}
+
+void markAllAsDead(xmldoc_t *x) {
+	char *codFils=alloca(VCAP);
+	xmlEnterCk(x, "LIST_G_COD_ELP_FILS");
+	xmldoc_t xGCodElpFils;
+	xmldoc_t xCodElpFils;
+	while(1) {
+		VisStat vs=xmlVisit(x, &xGCodElpFils);
+		if(vs==VIS_LAST) break;
+		xmlEnterCk(&xGCodElpFils, "G_COD_ELP_FILS");
+		xmlVisit(&xGCodElpFils, &xCodElpFils);
+		xmlEntcpy(&xCodElpFils, codFils, VCAP);
+		itemMapAdd(codFils, "DEAD", 111);
+	}
+}
+
+void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
+	fprintf(out, "# Niveau %d\n", niv);
+	xmlEnterCk(x, "LIST_G_COD_ELP_PERE1");
+	xmldoc_t xGCodElpPere1;
+	xmldoc_t xCodElpPere1, xCodLse2, xListGCodElpFils, xListGCodLse1, xListGCodElp2;
+	xmldoc_t xGCodLse1;
+	xmldoc_t xCodLse1, xLicLse1, xTypLse, jnk, xNbreMin, xNbreMax;
+	char nomListe[VCAP], itemPere[VCAP];
+	char *descrListe=alloca(VCAP), *natureEl=alloca(VCAP);
+	char nmin[VCAP], nmax[VCAP];
+	char minmaxStr[128];
+	char locPere[128];
+	while(1) {
+		VisStat vs=xmlVisit(x, &xGCodElpPere1);
+		if(vs==VIS_LAST) break;
+		xmlEnterCk(&xGCodElpPere1, "G_COD_ELP_PERE1");
+		xmlVisit(&xGCodElpPere1, &xCodElpPere1);
+		xmlVisit(&xGCodElpPere1, &xCodLse2);
+		xmlVisit(&xGCodElpPere1, &xListGCodElpFils);
+		xmlVisit(&xGCodElpPere1, &xListGCodLse1);
+		xmlVisit(&xGCodElpPere1, &xListGCodElp2);
+		
+		xmlEntcpy(&xCodElpPere1, itemPere, VCAP);
+		xmlEntcpy(&xCodLse2, nomListe, VCAP);
+
+		xmlEnterCk(&xListGCodLse1, "LIST_G_COD_LSE1");
+		xmlVisit(&xListGCodLse1, &xGCodLse1);
+		xmlEnterCk(&xGCodLse1, "G_COD_LSE1");
+		xmlVisit(&xGCodLse1, &xCodLse1); /* COD_LSE1 */
+		xmlVisit(&xGCodLse1, &xLicLse1);
+		xmlVisit(&xGCodLse1, &xTypLse);
+		xmlVisit(&xGCodLse1, &jnk); /* ETA_LSE1 */
+		xmlVisit(&xGCodLse1, &jnk); /* COD_ELP3 */
+		xmlVisit(&xGCodLse1, &xNbreMin);
+		xmlVisit(&xGCodLse1, &xNbreMax);
+		xmlEntcpy(&xLicLse1, descrListe, VCAP);
+		xmlEntcpy(&xTypLse, natureEl, VCAP);
+		char *natureEltAbbr=natureElt(natureEl);
+		minmaxStr[0]=0;
+		int minlen, maxlen;
+		if(xmlNextTokIgnPeek(&xNbreMin)==TOK_OPEN &&
+			xmlNextTokIgnPeek(&xNbreMax)==TOK_OPEN) {
+			xmlEntcpy(&xNbreMin, nmin, VCAP);
+			xmlEntcpy(&xNbreMax, nmax, VCAP);
+			if(strlen(nmin)>0 && strlen(nmax)>0)
+				snprintf(minmaxStr, 128, " [label=\"%s - %s\"]", nmin, nmax);
+		}
+
+#ifndef NOSPECIALTOP
+		if(niv == 0) {
+			char ppos[8];
+			itemMapFind(itemPere, ppos);
+			if(memcmp(ppos, "DEAD:L111", 9)!=0) {
+				fprintf(out, "%s [ label=<\n\t<TABLE PORT=\"L0\" BORDER=\"0\">\n\t<TR><TD><B>%s</B></TD></TR></TABLE>\n>]\n", itemPere, itemPere);
+				itemMapAdd(itemPere, itemPere, 0);
+				fprintf(out, "root:L0 -> %s:L0:n\n", itemPere);
+			} else {
+				fprintf(out, "%s [ label=<\n\t<TABLE PORT=\"L0\" BORDER=\"0\">\n\t<TR><TD><B><FONT COLOR=\"gray\">%s</FONT></B></TD></TR></TABLE>\n>]\n", itemPere, itemPere);
+				fprintf(out, "root:L0 -> %s:L0:n\n", itemPere);
+			}
+		}
+#endif
+
+		itemMapFind(itemPere, locPere);
+		if(memcmp(locPere, "DEAD:L111", 9)!=0) {
+			fprintf(out, "# Liste : %s\n# Item père : %s\n", nomListe, itemPere);
+			fprintf(out, "%s [ label=<\n\t<TABLE BORDER=\"0\">\n\t<TR><TD><B>%s %s - %s</B></TD></TR>\n", nomListe, nomListe, natureEltAbbr, descrListe);
+			parseListGCodElpFils(&xListGCodElpFils, nomListe, out);
+			fprintf(out, "\t</TABLE>\n\t>\n]\n");
+			fprintf(out, "%s -> %s:n%s\n", locPere, nomListe, minmaxStr);
+		} else {
+			markAllAsDead(&xListGCodElpFils);
+		}
+	}
+}
+
+void parseApobuf(char *buf, int len, FILE *out) {
+#ifndef XML_USE_DEPTH_COUNT
+	char xmlstack[STSIZE];
+#endif
+	xmldoc_t x;
+	xmldoc_t xListGNiveau, jnk, xListGCodDip;
+	xmldoc_t xListGCodLse, xGCodLse, xListGCodElp, xGCodElp, xCodElp, xTemSusElp; 
+	char temsus[16], codelp[VCAP];
+	VisStat vs;
+
+#ifndef XML_USE_DEPTH_COUNT
+	xmlInit(&x, buf, len, xmlstack, STSIZE);
+#else
+	xmlInit(&x, buf, len, NULL, 0);
+#endif
+	xmlEnterCk(&x, "EEDDDR10");
+	xmlVisit(&x, &xListGNiveau);
+	xmlVisit(&x, &xListGCodDip); 
+	xmlVisit(&x, &jnk); /* G_LIC_VDI1 */
+	xmlVisit(&x, &jnk); /* C_NB_ENR */
+	xmlVisit(&x, &jnk); /* C_NB_ENR_FILS */
+
+	xmldoc_t xGCodDip, xCodDip, xCodVrsVdi, xLicVdi, xLicEtp;
+	xmlEnterCk(&xListGCodDip, "LIST_G_COD_DIP");
+	xmlVisit(&xListGCodDip, &xGCodDip);
+	xmlEnterCk(&xGCodDip, "G_COD_DIP");
+	xmlVisit(&xGCodDip, &xCodDip);
+	xmlVisit(&xGCodDip, &xCodVrsVdi);
+	xmlVisit(&xGCodDip, &jnk); /* LIC_DIP */
+	xmlVisit(&xGCodDip, &xLicVdi); 
+	xmlVisit(&xGCodDip, &jnk); /* VRS_VET */
+	xmlVisit(&xGCodDip, &xLicEtp); /* LIC_ETP */
+	xmlVisit(&xGCodDip, &xListGCodLse);
+	xmlEnterCk(&xListGCodLse, "LIST_G_COD_LSE");
+	xmlVisit(&xListGCodLse, &xGCodLse);
+	xmlEnterCk(&xGCodLse, "G_COD_LSE");
+	for(int i=0; i<6; i++) {
+		xmlVisit(&xGCodLse, &jnk); /* COD_LSE .. NBR_MAX_ELP... */
+	}
+	xmlVisit(&xGCodLse, &xListGCodElp); /* LIST_G_COD_ELP */
+	xmlEnterCk(&xListGCodElp, "LIST_G_COD_ELP");
+	do {
+		vs=xmlVisit(&xListGCodElp, &xGCodElp);
+		if(vs==VIS_LAST) break;
+		xmlEnterCk(&xGCodElp, "G_COD_ELP");
+		xmlVisit(&xGCodElp, &jnk); /* NBR_CRD_ELP1 */
+		xmlVisit(&xGCodElp, &xCodElp);
+		xmlVisit(&xGCodElp, &jnk); /* LIC_ELP */
+		xmlVisit(&xGCodElp, &xTemSusElp);
+		xmlEntcpy(&xTemSusElp, temsus, 16);
+		if(temsus[0]=='O') {
+			xmlEntcpy(&xCodElp, codelp, VCAP);
+			itemMapAdd(codelp, "DEAD", 111);
+		}
+	} while(1);
+
+	char *codip=alloca(VCAP), *covdi=alloca(VCAP), *nomdip=alloca(VCAP), *nometp=alloca(VCAP);
+	xmlEntcpy(&xCodDip, codip, VCAP);
+	xmlEntcpy(&xCodVrsVdi, covdi, VCAP);
+	xmlEntcpy(&xLicVdi, nomdip, VCAP);
+	xmlEntcpy(&xLicEtp, nometp, VCAP);
+
+	fprintf(out, "digraph { graph[rankdir=\"TB\"]; \nnode[fontname=Courier; fontsize=10; shape=box]; \nedge[fontname=Courier; fontsize=8; ]\n");
+
+#ifndef NOSPECIALTOP
+	fprintf(out, "root [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>DIP: %s - %s</B><BR/><B>VET: %s - %s</B></TD></TR></TABLE>> ]\n", codip, nomdip, covdi, nometp);
+#endif
+
+	xmlEnterCk(&xListGNiveau, "LIST_G_NIVEAU");
+	int niv=0;
+	while(1) {
+		xmldoc_t xGNiveau;
+		vs=xmlVisit(&xListGNiveau, &xGNiveau);
+		if(vs!=VIS_OK)
+			break;
+		xmlEnterCk(&xGNiveau, "G_NIVEAU");
+
+		xmldoc_t xNiveau, xListGCodElpPere1;
+		xmlVisit(&xGNiveau, &xNiveau);
+		xmlVisit(&xGNiveau, &xListGCodElpPere1);
+
+		parseListGCodElpPere1(&xListGCodElpPere1, niv++, out);
+	} 
+	fprintf(out, "}\n");
+}
+
+#if !defined(__EMSCRIPTEN__)
+int main(int argc, char **argv) {
+	char *buf;
+	if(argc<2) { printf("Usage: %s <infile> > file.gv\n", argv[0]); exit(1); }
+	int fd=open(argv[1], O_RDONLY);
+	if(fd<0) { perror("open"); exit(1); }
+	struct stat sb;
+	fstat(fd, &sb);
+	buf=mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if(buf==MAP_FAILED) {
+		perror("mmap");
+		exit(1);
+	}
+	itemMapCap=1024;
+	itemMap=malloc(itemMapCap);
+	if(!itemMap) { perror("malloc itemMap"); exit(1); }
+	parseApobuf(buf, sb.st_size, stdout);
+	return(0);
+}
+#else
+void apo_parse_tmp(void) {
+	int fd=open("tmp.xml", O_RDONLY);
+	if(fd<0) { perror("open"); exit(1); }
+	struct stat sb;
+	fstat(fd, &sb);
+#ifndef USE_MMAP
+	gbuf=malloc(sb.st_size);
+	if(!gbuf) {
+		perror("malloc");
+		exit(1);
+	}
+	int nr=0;
+	do {
+		int nnr=read(fd, gbuf, sb.st_size);
+		if(nnr<=0) { perror("read"); exit(1); }
+		nr+=nnr;
+	} while(nr<sb.st_size);		
+#else
+	gbuf=mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	if(gbuf==MAP_FAILED) {
+		perror("mmap");
+		exit(1);
+	}
+#endif
+	close(fd);
+	FILE *f=fopen("tmp.gv", "w+");
+	if(!f) { perror("fopen"); exit(1); }
+	itemMapCap=1024;
+	itemMap=malloc(itemMapCap);
+	if(!itemMap) { perror("malloc itemMap"); exit(1); }
+	parseApobuf(gbuf, sb.st_size, f);
+	fprintf(stderr, "itemMapCap=%d\n", itemMapCap);
+	itemMapCap=1024;
+	itemMapIdx=0;
+	fclose(f);
+#ifndef USE_MMAP
+	free(gbuf);
+#else
+	munmap(gbuf, sb.st_size);
+#endif
+	free(itemMap);
+}
+#endif
+

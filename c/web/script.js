@@ -58,7 +58,7 @@ function enregSVG(ev) {
 }
 
 function enregHTML(ev) {
-	var f=new Blob([ifrm.innerHTML], {"type": "text/html"});
+	var f=new Blob([ifrm.contentDocument.documentElement.innerHTML], {"type": "text/html"});
 	lien(f, "html");
 }
 

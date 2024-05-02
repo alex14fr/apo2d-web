@@ -14,17 +14,25 @@ void parseListeManip(FILE *out, xmldoc_t *x) {
 	xmldoc_t xx;
 	while(xmlVisit(x, &xx)==VIS_OK) {
 		xmlEnterCk(&xx, "G_RGC_RGM");
-		char num[VCAP], cod[VCAP], seuil[VCAP], coef[VCAP], libel[VCAP];
+		char num[VCAP], cod[VCAP], seuil[VCAP], coef[VCAP], libel[VCAP], vrs[VCAP];
 		xmlCpynext(&xx, num, VCAP);
 		for(int i=0; i<2; i++) xmlCpynext(&xx, NULL, 0);
 		xmlCpynext(&xx, cod, VCAP);
-		for(int i=0; i<4; i++) xmlCpynext(&xx, NULL, 0);
+		xmlCpynext(&xx, vrs, VCAP);
+		for(int i=0; i<3; i++) xmlCpynext(&xx, NULL, 0);
 		xmlCpynext(&xx, coef, VCAP);
 		for(int i=0; i<2; i++) xmlCpynext(&xx, NULL, 0);
 		xmlCpynext(&xx, seuil, VCAP);
 		xmlCpynext(&xx, NULL, 0);
 		xmlCpynext(&xx, libel, VCAP);
-		fprintf(out, "<tr><td>%s<td>%s : %s<td align=center>%s<td>%s\n", num, cod, libel, coef, seuil);
+		int n=strlen(vrs);
+		if(n>0 && n+2<VCAP) {
+			for(int i=n-1; i>=0; i--) 
+				vrs[i+2]=vrs[i];
+			vrs[0]='V';
+			vrs[1]=' ';
+		}
+		fprintf(out, "<tr><td>%s<td>%s %s : %s<td align=center>%s<td>%s\n", num, cod, vrs, libel, coef, seuil);
 	}
 	fprintf(out, "</table>\n");
 }
@@ -77,6 +85,7 @@ void parseRgc(char *buf, int len, FILE *out) {
 			fprintf(out, "<h2>%s %s V%s %s - Règle %s</h2>\n", typCalcul, codObj, vrsObj, libObj, numRegle);
 		else
 			fprintf(out, "<h2>%s %s %s - Règle %s</h2>\n", typCalcul, codObj, libObj, numRegle);
+		fprintf(out, "<h5>Années de validité: %s - %s</h5>\n", anneeDebutS, anneeFinS);
 
 		xmldoc_t xlistgrgcrgm;
 		xmlVisit(&xrgc, &xlistgrgcrgm);

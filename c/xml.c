@@ -244,6 +244,16 @@ void xmlEnterCk(xmldoc_t *x, char *expect) {
 	}
 }
 
+void xmlCpynext(xmldoc_t *x, char *v, int vcap) {
+	xmldoc_t tmp;
+	xmlVisit(x, &tmp);
+	if(vcap>0) {
+		if(xmlNextTokIgnPeek(&tmp)==TOK_OPEN)
+			xmlEntcpy(&tmp, v, vcap);
+		else
+			v[0]=0;
+	}
+}
 
 #ifdef TEST
 #include <unistd.h>

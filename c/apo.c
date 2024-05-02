@@ -311,10 +311,14 @@ int main(int argc, char **argv) {
 		perror("mmap");
 		exit(1);
 	}
-	itemMapCap=16536;
-	itemMap=malloc(itemMapCap);
-	if(!itemMap) { perror("malloc itemMap"); exit(1); }
-	parseApobuf(buf, sb.st_size, stdout);
+	if(argc>0 && strstr(argv[0], "rgc")) {
+		parseRgc(buf, sb.st_size, stdout);
+	} else {
+		itemMapCap=16536;
+		itemMap=malloc(itemMapCap);
+		if(!itemMap) { perror("malloc itemMap"); exit(1); }
+		parseApobuf(buf, sb.st_size, stdout);
+	}
 	return(0);
 }
 #else

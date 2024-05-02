@@ -10,7 +10,11 @@ function loadXml(ev) {
 	fnam=fileIn.files[0].name;
 	fileIn.files[0].text().then((f)=> { 
 		FS.writeFile("tmp.xml", f);
-		ccall("apo_parse_tmp");
+		if(typeof _apo_parse_tmp == "function") {
+			_apo_parse_tmp();
+		} else {
+			ccall("apo_parse_tmp");
+		}
 		ifrm.contentDocument.documentElement.innerHTML=gdiv.innerHTML='';
 		document.getElementById("svgbtn").style.display="none";
 		document.getElementById("gvbtn").style.display="none";

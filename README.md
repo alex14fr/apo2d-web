@@ -59,8 +59,8 @@ Le reste de la procédure est identique à la visualisation d'une "décompositio
 
 ## Installation en local
 
-- Pour compiler l'outil en ligne de commande: `make`
-- Pour compiler l'interface Web et la tester en local: `make -C web serve`, puis diriger votre navigateur vers https://localhost:8000/
+- Pour compiler l'outil en ligne de commande: `make`.
+- Pour compiler l'interface Web et la tester en local: `make -C web serve`, puis diriger votre navigateur vers https://localhost:8000/ Cette compilation nécessite que [emscripten](https://www.emscripten.org) soit installé.
 - Idem avec `make -C drawio-web serve` pour l'interface vers le package `apogee2drawio`.
 
 ## Contact

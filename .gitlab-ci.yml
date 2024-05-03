@@ -1,4 +1,5 @@
 build:
+    when: manual
     image: emscripten/emsdk
     script:
         - make -C drawio-web

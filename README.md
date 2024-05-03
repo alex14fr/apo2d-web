@@ -21,7 +21,7 @@ Ce projet contient :
 - Choisir XML
 - Enregistrer le fichier
 
-- Ouvrir l'interface Web à l'adresse https://www.imo.universite-paris-saclay.fr/~alexandre.janon/apogee2dot/
+- Ouvrir l'interface Web à l'adresse https://www.imo.universite-paris-saclay.fr/~alexandre.janon/apogee2dot/, en utilisateur un navigateur compatible (toute version récente de Mozilla Firefox ou Google Chrome devrait l'être)
 - Bouton "Ouvrir un fichier XML Apogée"
 - Choisir le fichier enregistré plus haut
 - Le diagramme de hiérarchie des éléments apparaît:
@@ -43,7 +43,7 @@ Le reste de la procédure est identique à la visualisation d'une "décompositio
 - Choisir le fichier enregistré plus haut
 - Les règles de calcul apparaissent:
 
-!(doc/screen2.webp){width=600px}
+![](doc/screen2.webp){width=600px}
 
 ### Diagrammes au format DrawIO
 

@@ -7,7 +7,7 @@ Ce projet contient :
 - un outil de visualisation des "décompositions de diplômes" dans Apogée sous la forme de diagrammes Graphviz,
 - un outil de génération d'un récapitulatif des règles de calcul des notes et résultats enregistrées dans Apogée,
 - une interface Web (intégralement côté client) pour ces deux outils,
-- une interface Web similaire pour le package Python [apogee2drawio](https://gitlab.dsi.universite-paris-saclay.fr/pavel.kalouguine/apogee2drawio).
+- une interface Web similaire pour le package Python [apogee2drawio](https://gitlab.dsi.universite-paris-saclay.fr/pavel.kalouguine/apogee2drawio), dont le but est aussi de créer des visualisations sous forme de diagrammes, mais au format [DrawIO](https://app.diagrams.net/).
 
 ## Démarrage rapide
 
@@ -21,7 +21,7 @@ Ce projet contient :
 - Choisir XML
 - Enregistrer le fichier
 
-- Ouvrir l'interface Web à l'adresse https://www.imo.universite-paris-saclay.fr/~alexandre.janon/apogee2dot/, en utilisateur un navigateur compatible (toute version récente de Mozilla Firefox ou Google Chrome devrait l'être)
+- Ouvrir l'interface Web à l'adresse https://www.imo.universite-paris-saclay.fr/~alexandre.janon/apogee2dot/
 - Bouton "Ouvrir un fichier XML Apogée"
 - Choisir le fichier enregistré plus haut
 - Le diagramme de hiérarchie des éléments apparaît:

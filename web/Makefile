@@ -23,7 +23,7 @@ dest/.GVZ_OK:
 	touch $@
 
 apo.js: $(SRCS) dest/.EXPAT_OK dest/.GVZ_OK
-	$(EMCC) $(CFLAGS) -DALLINONE $(EMLINKFLAGS) -Idest/include -Ldest/lib -Ldest/lib/graphviz -o $@ $(SRCS) -lgvplugin_dot_layout -lgvplugin_core -lgvc -lpathplan -lcgraph -lxdot -lcdt -lexpat
+	$(EMCC) $(CFLAGS) $(EMLINKFLAGS) -Idest/include -Ldest/lib -Ldest/lib/graphviz -o $@ $(SRCS) -lgvplugin_dot_layout -lgvplugin_core -lgvc -lpathplan -lcgraph -lxdot -lcdt -lexpat
 
 clean:
 	rm -f apo.js apo.wasm

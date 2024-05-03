@@ -325,6 +325,7 @@ int main(int argc, char **argv) {
 void apo_parse_tmp(void) {
 	unlink("tmp.gv");
 	unlink("tmp.html");
+	unlink("tmp.svg");
 	int fd=open("tmp.xml", O_RDONLY);
 	if(fd<0) { perror("open"); exit(1); }
 	struct stat sb;
@@ -358,6 +359,10 @@ void apo_parse_tmp(void) {
 		itemMapIdx=0;
 		fclose(f);
 		free(itemMap);
+#ifdef ALLINONE
+		void gviz_tmp(void);
+		gviz_tmp();	
+#endif
 	}
 	munmap(gbuf, sb.st_size);
 }

@@ -59,7 +59,7 @@ TokenType xmlNextTok(xmldoc_t *x, char **v, int *lv) {
 		c=xmlNextCh(x);
 		if(c=='/') {
 			ret=TOK_CLOSE;
-			c=xmlNextCh(x);
+			xmlNextCh(x);
 		} else {
 			ret=TOK_OPEN;
 		}

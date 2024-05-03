@@ -11,7 +11,7 @@ NJ = $(shell nproc)
 all: apo.js
 
 dest/.EXPAT_OK:
-	test -f expat-$(EXPATVER).tar.xz || wget https://github.com/libexpat/libexpat/releases/download/R_$(EXPATVER:.=_)/expat-$(EXPATVER).tar.xz
+	test -f expat-$(EXPATVER).tar.xz || wget https://github.com/libexpat/libexpat/releases/download/R_$(subst .,_,$(EXPATVER))/expat-$(EXPATVER).tar.xz
 	test -d expat-$(EXPATVER) || tar xf expat-$(EXPATVER).tar.xz
 	cd expat-$(EXPATVER) && emconfigure ./configure --prefix=$(shell pwd)/dest --enable-static --disable-shared --without-xmlwf --without-examples --without-tests --without-docbook && make -j $(NJ) install
 	touch $@

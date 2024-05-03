@@ -6,6 +6,7 @@ build:
     cache:
       paths:
         - web/dest/
+        - /emsdk/upstream/emscripten/cache/
     artifacts:
       paths:
         - web/index.html

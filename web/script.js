@@ -1,61 +1,63 @@
 "use strict";
 
-var ouvrBtn, fileIn, ifrm;
-var nready=0;
+var ouvrBtn, fileIn, fnam, ifrm;
 
 function btnOuvrir(ev) {
 	fileIn.click();
 }
 
-async function loadXml(ev) {
-	var file=fileIn.files[0];
-	worker.postMessage(await(file.text()));
-}
-
-function debloq() {
-	if(nready>=2) {
-		document.getElementById("chargement").style.display="none";
-		document.querySelector("form").style.display="flex";
-		ifrm.style.display="block";
+function loadXml(ev) {
+	fnam=fileIn.files[0].name;
+	fileIn.files[0].text().then((f)=> { 
+		FS.writeFile("tmp.xml", f);
+		if(typeof _apo_parse_tmp == "function") {
+			_apo_parse_tmp();
+		} else {
+			ccall("apo_parse_tmp");
+		}
+		ifrm.contentDocument.documentElement.innerHTML='';
+		["svgbtn","gvbtn","htmlbtn"].forEach((x)=>document.getElementById(x).style.display="none");
+		var htm;
+		if(FS.findObject("tmp.svg")) {
+			htm=FS.readFile("tmp.svg", {"encoding":"utf8"});
+			["svgbtn","gvbtn"].forEach((x)=>document.getElementById(x).style.display="initial");
+		} else {
+			htm=FS.readFile("tmp.html", {"encoding":"utf8"});
+			document.getElementById("htmlbtn").style.display="initial";
+		}
+		ifrm.contentDocument.documentElement.innerHTML=htm;
 		wResize();
-	}
-}
-
-function winMessage(ev) {
-	var evd=JSON.parse(ev.data);
-	if(evd.event=="init") {
-		nready++;
-		debloq();
-	} else if(evd.event=="save") {
-		var tmp=URL.createObjectURL(new Blob([evd.xml]));
-		var a=document.createElement("a");
-		a.href=tmp;
-		a.download=fileIn.files[0].name+".drawio";
-		a.click();
-		URL.revokeObjectURL(tmp);
-	}
+	});
 }
 
 function wResize(ev) {
+	ifrm.style.marginTop=(document.querySelector('form').clientHeight)+'px';
 	ifrm.style.width=(ifrm.parentElement.clientWidth-5)+"px";
-	ifrm.style.height=(window.innerHeight-document.querySelector("form").clientHeight-5)+"px";
+	ifrm.style.height=(window.innerHeight-document.querySelector("form").clientHeight-20)+"px";
+	ifrm.style.display='initial';
 }
 
-function workMsg(ev) {
-	if(ev.data=="ready") {
-		nready++;
-		debloq();
-	} else {
-		ifrm.contentWindow.postMessage(ev.data, "*");
-	}
+function enreg(ext, type, ev) {
+	var f=new Blob([FS.readFile("tmp."+ext, {"encoding":"utf8"})], {"type":type});
+	lien(f, ext);
 }
 
-var worker=new Worker("worker.js");
-worker.addEventListener("message", workMsg);
+function lien(f, ext) {
+	var a=document.createElement('a');
+	var u=URL.createObjectURL(f);
+	a.href=u;
+	a.download=fnam+"."+ext;
+	a.click();
+	URL.revokeObjectURL(u);
+}
+
+ifrm=document.getElementById("f");
 ouvrBtn=document.getElementById("ouvrir");
 ouvrBtn.addEventListener("click", btnOuvrir);
 fileIn=document.querySelector("input[type=file]");
 fileIn.addEventListener("change", loadXml);
-ifrm=document.querySelector("iframe");
-window.addEventListener("message", winMessage);
 window.addEventListener("resize", wResize);
+document.getElementById("svgbtn").addEventListener("click", (ev)=>enreg("svg", "image/svg+xml", ev));
+document.getElementById("gvbtn").addEventListener("click", (ev)=>enreg("gv", "text/x-graphviz", ev));
+document.getElementById("htmlbtn").addEventListener("click", (ev)=>enreg("html", "text/html", ev));
+

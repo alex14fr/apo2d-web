@@ -1,3 +1,21 @@
+/*
+ *  apo2d-web
+    Copyright (C) 2024 <alexandre.janon@universite-paris-saclay.fr>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -5,14 +23,11 @@
 #include <sys/stat.h>
 #include "inc.h"
 
-#ifdef __EMSCRIPTEN__
-#define USE_MMAP
 static char *gbuf;
-#endif
-
 static char* itemMap;
 static int itemMapIdx=0;
 static int itemMapCap=0;
+
 #define VCAP 128
 
 char *naturesElts[]={"Semestre", "SEM", "U.E.", "UE", "U.F.", "UF", "Rés. étape", "RET", "Stage", "STG",
@@ -40,7 +55,6 @@ void itemMapAdd(char *item, char *nomListe, int pos) {
 	int len=snprintf(str, 128, "%s%c%s:L%d", item, 0, nomListe, pos);
 	if(len<0) { errprintf("itemMapAdd: snprintf error\n"); exit(1); }
 	while(itemMapIdx+len+2>itemMapCap) { 
-		//errprintf("itemMapAdd: realloc\n"); 
 		itemMap=realloc(itemMap, itemMapCap+8192);
 		if(!itemMap) {
 			errprintf("itemMapAdd: realloc failed\n");
@@ -233,10 +247,8 @@ void parseApobuf(char *buf, int len, FILE *out) {
 
 	fprintf(out, "digraph { graph[rankdir=\"TB\"]; \nnode[fontname=Courier; fontsize=10; shape=box]; \nedge[fontname=Courier; fontsize=8; ]\n");
 
-#ifndef NOSPECIALTOP
 	fprintf(out, "root0 [ label=<<TABLE BORDER=\"0\"><TR><TD PORT=\"L0\" BGCOLOR=\"lightgray\"><B>%s DIP V%s : %s</B><BR/><B>ETP V%s : %s</B></TD></TR></TABLE>> ];\nroot0 -> root\n", codip, covdi, nomdip, covet, nometp);
 	fprintf(out, "root [ label=<\n\t<TABLE BORDER=\"0\"><TR><TD><B>%s %s : %s</B></TD></TR>\n", lcode, natureElt(ltype), lnom);
-#endif
 
 	for(int i=0; i<3; i++) {
 		xmlVisit(&xGCodLse, &jnk); /* NBR_MIN_ELP, NBR_MAX_ELP... */
@@ -262,23 +274,17 @@ void parseApobuf(char *buf, int len, FILE *out) {
 		char suspB[32]="", suspE[8]="";
 		if(temsus[0]=='O') {
 			itemMapAdd(codelp, "DEAD", 111);
-#ifndef NOSPECIALROOT
 			memcpy(suspB, "<FONT COLOR=\"gray\">\0", 20);
 			memcpy(suspE, "</FONT>\0", 8);
-#endif
 		} else {
 			itemMapAdd(codelp, "root", pos);
 		}
 
-#ifndef NOSPECIALROOT
 		fprintf(out, "\t<TR><TD PORT=\"L%d\">%s%s %s : %s%s</TD></TR>\n", pos, suspB, codelp, natureElt(naturelp), nomlp, suspE);
-#endif
 		pos++;
 	} while(1);
 
-#ifndef NOSPECIALROOT
 	fprintf(out, "</TABLE>>]; \n");
-#endif
 
 	xmlEnterCk(&xListGNiveau, "LIST_G_NIVEAU");
 	int niv=0;
@@ -298,35 +304,31 @@ void parseApobuf(char *buf, int len, FILE *out) {
 	fprintf(out, "}\n");
 }
 
-#if !defined(__EMSCRIPTEN__)
-int main(int argc, char **argv) {
-	char *buf;
-	if(argc<2) { printf("Usage: %s <infile> > file.gv\n", argv[0]); exit(1); }
-	int fd=open(argv[1], O_RDONLY);
-	if(fd<0) { perror("open"); exit(1); }
-	struct stat sb;
-	fstat(fd, &sb);
-	buf=mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-	if(buf==MAP_FAILED) {
-		perror("mmap");
-		exit(1);
+typedef enum {
+	TYP_DDD,
+	TYP_RGC,
+} typeF;
+
+typeF typeFic(char *buf, int len) {
+	char *rech="<ECRGCR10>";
+	int n=strlen(rech), nf=0;
+	for(int i=0; i<128 && nf<n; i++) {
+		if(rech[nf]==gbuf[i]) nf++;
+		else nf=0;
 	}
-	if(argc>0 && strstr(argv[0], "rgc")) {
-		parseRgc(buf, sb.st_size, stdout);
-	} else {
-		itemMapCap=16536;
-		itemMap=malloc(itemMapCap);
-		if(!itemMap) { perror("malloc itemMap"); exit(1); }
-		parseApobuf(buf, sb.st_size, stdout);
-	}
-	return(0);
+	if(nf==n) return TYP_RGC;
+	else return TYP_DDD;
 }
-#else
-void apo_parse_tmp(void) {
-	unlink("tmp.gv");
-	unlink("tmp.html");
-	unlink("tmp.svg");
-	int fd=open("tmp.xml", O_RDONLY);
+
+void doFic(char *nomx, FILE *out) {
+	char *nom;
+	if(!nomx) {
+		nom=alloca(8);
+		memcpy(nom, "tmp.xml\0", 8);
+	} else {
+		nom=nomx;
+	}
+	int fd=open(nom, O_RDONLY);
 	if(fd<0) { perror("open"); exit(1); }
 	struct stat sb;
 	fstat(fd, &sb);
@@ -335,36 +337,42 @@ void apo_parse_tmp(void) {
 		perror("mmap");
 		exit(1);
 	}
-	close(fd);
-	char *rech="<ECRGCR10>";
-	int n=strlen(rech), nf=0;
-	for(int i=0; i<128 && nf<n; i++) {
-		if(rech[nf]==gbuf[i]) nf++;
-		else nf=0;
-	}
-	if(nf==n) {
-		FILE *f=fopen("tmp.html", "w+");
-		if(!f) { perror("fopen"); exit(1); }
-		parseRgc(gbuf, sb.st_size, f);
-		fclose(f);
-	} else {
-		FILE *f=fopen("tmp.gv", "w+");
-		if(!f) { perror("fopen"); exit(1); }
-		itemMapCap=16536;
-		itemMap=malloc(itemMapCap);
-		if(!itemMap) { perror("malloc itemMap"); exit(1); }
-		parseApobuf(gbuf, sb.st_size, f);
-		fprintf(stderr, "itemMapCap=%d\n", itemMapCap);
+	typeF tf=typeFic(gbuf, sb.st_size);
+	if(tf==TYP_DDD) {
+		if(!out) out=fopen("tmp.gv", "w+");
 		itemMapCap=16536;
 		itemMapIdx=0;
-		fclose(f);
+		if(itemMap) free(itemMap);
+		itemMap=malloc(itemMapCap);
+		if(!itemMap) { perror("malloc itemMap"); exit(1); }
+		parseApobuf(gbuf, sb.st_size, out);
 		free(itemMap);
-#ifdef ALLINONE
+		fflush(out);
+#ifdef __EMSCRIPTEN__
 		void gviz_tmp(void);
-		gviz_tmp();	
+		gviz_tmp();
 #endif
+	} else {
+		if(!out) out=fopen("tmp.html", "w+");
+		parseRgc(gbuf, sb.st_size, out);
+		fflush(out);
 	}
 	munmap(gbuf, sb.st_size);
+}
+
+#if !defined(__EMSCRIPTEN__)
+int main(int argc, char **argv) {
+	if(argc<2) { printf("Usage: %s <xml-apogee>\n\n<xml-apogee> est un fichier XML exporté depuis Apogée: \n\n - soit dans Structure des enseignements, Documentation/Edition de la \ndécomposition d'un diplôme, auquel cas la sortie est un diagramme GraphViz/dot; \n\n - soit dans Modalités de contrôle, Documentation/Edition du \ndétail des règles de calcul, auquel cas la sortie est un fichier HTML.\n\n ", argv[0]); exit(1); }
+	doFic(argv[1], stdout);
+	return(0);
+}
+#else
+void apo_parse_tmp(void) {
+	unlink("tmp.gv");
+	unlink("tmp.html");
+	unlink("tmp.svg");
+	doFic(NULL, NULL);
+
 }
 #endif
 

@@ -26,6 +26,8 @@ Ce projet contient :
 - Choisir le fichier enregistré plus haut
 - Le diagramme de hiérarchie des éléments apparaît:
 
+![](doc/screen1.webp){width=650px}
+
 ### Visualisation des règles de calcul
 
 - Ouvrir Apogée et se connecter à votre base
@@ -43,7 +45,7 @@ Le reste de la procédure est identique à la visualisation d'une "décompositio
 - Choisir le fichier enregistré plus haut
 - Les règles de calcul apparaissent:
 
-![](doc/screen2.webp){width=600px}
+![](doc/screen2.webp){width=650px}
 
 ### Diagrammes au format DrawIO
 
@@ -53,12 +55,19 @@ Le reste de la procédure est identique à la visualisation d'une "décompositio
 - Choisir le fichier enregistré plus haut
 - Un diagramme DrawIO modifiable apparaît:
 
+![](doc/screen3.webp){width=650px}
 
 ## Installation en local
 
 - Pour compiler l'outil en ligne de commande: `make`
 - Pour compiler l'interface Web et la tester en local: `make -C web serve`, puis diriger votre navigateur vers https://localhost:8000/
 - Idem avec `make -C drawio-web serve` pour l'interface vers le package `apogee2drawio`.
+
+## Contact
+
+Mail: <alexandre.janon@universite-paris-saclay.fr>
+
+En cas de problème, n'oubliez pas d'inclure le fichier XML Apogée que vous essayez de visualiser.
 
 ## Remerciements
 

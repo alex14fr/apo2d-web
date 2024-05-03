@@ -1,0 +1,6 @@
+build:
+    image: emscripten/emsdk
+    script:
+        - make -C drawio-web
+        - make -C web
+        

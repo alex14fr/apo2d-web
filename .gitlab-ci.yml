@@ -3,4 +3,17 @@ build:
     script:
         - make -C drawio-web
         - make -C web
-        
+    cache:
+      paths:
+        - web/dest/
+    artifacts:
+      paths:
+        - web/index.html
+        - web/script.js
+        - web/apo.js
+        - web/apo.wasm
+        - drawio-web/index.html
+        - drawio-web/script.js
+        - drawio-web/worker.js
+        - drawio-web/pkg.tgz
+

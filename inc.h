@@ -12,8 +12,8 @@
 
 typedef struct {
 	char *buf;
-	int pos;
-	int posmax;
+	unsigned int pos;
+	unsigned int posmax;
 	int line;
 #ifndef XML_USE_DEPTH_COUNT
 	char *stack;

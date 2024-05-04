@@ -59,9 +59,17 @@ static char xmlNextCh(xmldoc_t *x) {
 	char c;
 	do {
 		c=xmlGetCh(x);
-		if(c=='\n') x->line++;
+	//	if(c=='\n') x->line++;
 	} while(c=='\n' || c=='\r' || c=='\t' || c==' ');
 	return(c);
+}
+
+static void xmlSkipNS(xmldoc_t *x) {
+	char c;
+	do {
+		c=xmlGetCh(x);
+	} while(c=='\n' || c=='\r' || c=='\t' || c==' ');
+	x->pos--;
 }
 
 TokenType xmlNextTok(xmldoc_t *x, char **v, int *lv) {
@@ -169,6 +177,7 @@ EntStat xmlEnter(xmldoc_t *x, char *v, int vcap) {
 	}
 	memcpy(v, w, wl);
 	v[wl]=0;
+	xmlSkipNS(x);
 	return(ENT_OK);
 }
 

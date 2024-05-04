@@ -25,8 +25,8 @@
 
 static char *gbuf;
 static char* itemMap;
-static int itemMapIdx=0;
-static int itemMapCap=0;
+static unsigned int itemMapIdx=0;
+static unsigned int itemMapCap=0;
 
 #define VCAP 128
 
@@ -52,34 +52,39 @@ char* natureElt(char *nat) {
 
 void itemMapAdd(char *item, char *nomListe, int pos) {
 	char str[128];
-	int len=snprintf(str, 128, "%s%c%s:L%d", item, 0, nomListe, pos);
+	int len=snprintf(str, 127, "%s%c%s:L%d", item, 0, nomListe, pos);
 	if(len<0) { errprintf("itemMapAdd: snprintf error\n"); exit(1); }
+	str[len]=len;
 	while(itemMapIdx+len+2>itemMapCap) { 
-		itemMap=realloc(itemMap, itemMapCap+8192);
+		itemMap=realloc(itemMap, itemMapCap+65536);
 		if(!itemMap) {
 			errprintf("itemMapAdd: realloc failed\n");
 			exit(1);
 		}
-		itemMapCap+=8192;
+		itemMapCap+=65536;
 	}
-	itemMap[itemMapIdx++]=len+1;
 	memcpy(itemMap+itemMapIdx, str, len+1);
 	itemMapIdx+=len+1;
 }
 
-void itemMapFind(char *item, char *pos) {
-	int i=0;
+void itemMapFind(char *item, char *pos, int startAt) {
 	int n=strlen(item);
-	while(i<itemMapIdx) {
-		int len=itemMap[i++];
+	int i=itemMapIdx-1;
+	if(startAt>0) i=startAt-1;
+	//int nIter=0;
+	while(i>=0) {
+	//	nIter++;
+		int len=itemMap[i];
+		i-=len;
 		if(memcmp(item, itemMap+i, n+1)==0) {
 			memcpy(pos, itemMap+i+n+1, len-n-1);
+			pos[len-n-1]=0;
+	//		printf("nIter=%d / nItems=%d mapCap=%d\n", nIter, nItems, itemMapCap);
 			return;
-		} else {
-			i+=len;
 		}
+		i--;
 	}
-	sprintf(pos, "UNKN");
+	memcpy(pos, "UNKN", 5);
 }
 
 void parseListGCodElpFils(xmldoc_t *x, char *nomListe, FILE *out) {
@@ -133,7 +138,7 @@ void markAllAsDead(xmldoc_t *x) {
 	}
 }
 
-void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
+void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out, int itemMapDebutNivPrec) {
 	//fprintf(out, "# Niveau %d\n", niv);
 	xmlEnterCk(x, "LIST_G_COD_ELP_PERE1");
 	xmldoc_t xGCodElpPere1;
@@ -179,7 +184,7 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 		}
 
 
-		itemMapFind(itemPere, locPere);
+		itemMapFind(itemPere, locPere, itemMapDebutNivPrec);
 		if(memcmp(locPere, "DEAD:L111", 9)!=0) {
 			//fprintf(out, "# Liste : %s\n# Item père : %s\n", nomListe, itemPere);
 			fprintf(out, "%s [ label=<\n\t<TABLE BORDER=\"0\">\n\t<TR><TD><B>%s %s : %s</B></TD></TR>\n", nomListe, nomListe, natureElt(natureEl), descrListe);
@@ -193,20 +198,14 @@ void parseListGCodElpPere1(xmldoc_t *x, int niv, FILE *out) {
 }
 
 void parseApobuf(char *buf, int len, FILE *out) {
-#ifndef XML_USE_DEPTH_COUNT
-	char xmlstack[STSIZE];
-#endif
 	xmldoc_t x;
 	xmldoc_t xListGNiveau, jnk, xListGCodDip;
 	xmldoc_t xListGCodLse, xGCodLse, xListGCodElp, xGCodElp, xCodElp, xTemSusElp, xLicNel; 
 	char temsus[16], codelp[VCAP], nomlp[VCAP], naturelp[VCAP];
 	VisStat vs;
 
-#ifndef XML_USE_DEPTH_COUNT
-	xmlInit(&x, buf, len, xmlstack, STSIZE);
-#else
 	xmlInit(&x, buf, len, NULL, 0);
-#endif
+
 	xmlEnterCk(&x, "EEDDDR10");
 	xmlVisit(&x, &xListGNiveau);
 	xmlVisit(&x, &xListGCodDip); 
@@ -288,6 +287,7 @@ void parseApobuf(char *buf, int len, FILE *out) {
 
 	xmlEnterCk(&xListGNiveau, "LIST_G_NIVEAU");
 	int niv=0;
+	int itemMapDebutNivPrec=0;
 	while(1) {
 		xmldoc_t xGNiveau;
 		vs=xmlVisit(&xListGNiveau, &xGNiveau);
@@ -299,7 +299,8 @@ void parseApobuf(char *buf, int len, FILE *out) {
 		xmlVisit(&xGNiveau, &xNiveau);
 		xmlVisit(&xGNiveau, &xListGCodElpPere1);
 
-		parseListGCodElpPere1(&xListGCodElpPere1, niv++, out);
+		parseListGCodElpPere1(&xListGCodElpPere1, niv++, out, itemMapDebutNivPrec);
+		itemMapDebutNivPrec=itemMapIdx;
 	} 
 	fprintf(out, "}\n");
 }
@@ -340,7 +341,7 @@ void doFic(char *nomx, FILE *out) {
 	typeF tf=typeFic(gbuf, sb.st_size);
 	if(tf==TYP_DDD) {
 		if(!out) out=fopen("tmp.gv", "w+");
-		itemMapCap=16536;
+		itemMapCap=65536;
 		itemMapIdx=0;
 		if(itemMap) free(itemMap);
 		itemMap=malloc(itemMapCap);

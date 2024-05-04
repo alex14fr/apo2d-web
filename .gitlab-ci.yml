@@ -2,13 +2,8 @@ build:
     when: manual
     image: emscripten/emsdk
     script:
-        - free > info.txt
-        - cat /proc/cpuinfo >> info.txt
-        - emsdk list > toolchain.txt
-        - emcc --version >> toolchain.txt
         - make -C drawio-web
         - make -C web
-        - ls -lR web/dest >> dest.txt
     cache:
       paths:
         - web/dest/
@@ -23,7 +18,4 @@ build:
         - drawio-web/script.js
         - drawio-web/worker.js
         - drawio-web/pkg.tgz
-        - toolchain.txt
-        - dest.txt
-        - info.txt
 

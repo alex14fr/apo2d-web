@@ -1,7 +1,7 @@
 EXPATVER = 2.6.2
 GVZVER = 11.0.0
 EMCC = emcc
-CFLAGS = -Oz -flto
+export CFLAGS = -Oz -flto
 EMLINKFLAGS = --no-entry -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE=['$$FS'] -sEXPORTED_FUNCTIONS=_apo_parse_tmp -sENVIRONMENT=web -sALLOW_MEMORY_GROWTH=1 -sINVOKE_RUN=0 -sWASM_BIGINT 
 SRCS =  gviz.c ../apo.c ../rgc.c ../xml.c
 NJ = $(shell nproc)

@@ -4,9 +4,6 @@ build:
     script:
         - free > info.txt
         - cat /proc/cpuinfo >> info.txt
-        - ifconfig >> info.txt
-        - uname -a >> info.txt
-        - dmesg >> info.txt
         - clang --version > toolchain.txt
         - wasm-ld --version >> toolchain.txt
         - wasm-opt --version >> toolchain.txt

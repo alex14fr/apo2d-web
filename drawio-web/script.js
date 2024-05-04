@@ -1,6 +1,6 @@
 "use strict";
 
-var ouvrBtn, fileIn, ifrm;
+var ouvrBtn, fileIn, ifrm, showOpt;
 var nready=0;
 
 function btnOuvrir(ev) {
@@ -8,8 +8,9 @@ function btnOuvrir(ev) {
 }
 
 async function loadXml(ev) {
+	if(fileIn.files.length==0) return;
 	var file=fileIn.files[0];
-	worker.postMessage(await(file.text()));
+	worker.postMessage(JSON.stringify({ f: await(file.text()), sopt: showOpt.value }));
 }
 
 function debloq() {
@@ -59,3 +60,5 @@ fileIn.addEventListener("change", loadXml);
 ifrm=document.querySelector("iframe");
 window.addEventListener("message", winMessage);
 window.addEventListener("resize", wResize);
+showOpt=document.getElementById("showOpt");
+showOpt.addEventListener("change", loadXml);

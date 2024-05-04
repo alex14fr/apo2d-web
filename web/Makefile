@@ -29,7 +29,7 @@ clean:
 	rm -f apo.js apo.wasm
 
 sclean: clean
-	rm -rf EXPAT_OK GVZ_OK dest/
+	rm -rf dest/ expat-$(EXPATVER)/ graphviz-$(GVZVER)/
 
 serve: apo.js
 	python -mhttp.server

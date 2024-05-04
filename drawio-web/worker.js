@@ -10,8 +10,9 @@ async function loadpy() {
 }
 
 function gotmsg(ev) {
-	pyo.FS.writeFile("tmp.xml", ev.data);
-	pyo.runPython("apogee2drawio.make_diagram('tmp.xml','tmp2.xml',ShowOption.CODE_AND_DESCRIPTION)")
+	var doo=JSON.parse(ev.data);
+	pyo.FS.writeFile("tmp.xml", doo.f);
+	pyo.runPython("apogee2drawio.make_diagram('tmp.xml','tmp2.xml',ShowOption."+doo.sopt+")")
 	var xmlstr=pyo.FS.readFile("tmp2.xml", {"encoding":"utf8"});
 	var msgstr=JSON.stringify({"action":"load", "xml":xmlstr});
 	self.postMessage(msgstr);

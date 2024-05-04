@@ -8,7 +8,7 @@ build:
         - emcc --version >> toolchain.txt
         - make -C drawio-web
         - make -C web
-        - ls -lR dest >> dest.txt
+        - ls -lR web/dest >> dest.txt
     cache:
       paths:
         - web/dest/
